@@ -158,6 +158,12 @@
                 </button>
               </div>
               <span v-if="validationErrors.password" class="field-error">{{ validationErrors.password }}</span>
+              <div v-if="form.password" class="password-strength">
+                <div class="strength-bar">
+                  <div class="strength-fill" :style="{ width: `${(strength.score / 4) * 100}%`, background: strength.color }"></div>
+                </div>
+                <span class="strength-label" :style="{ color: strength.color }">{{ strength.label }}</span>
+              </div>
             </div>
 
             <!-- Compliance Checkbox -->
@@ -197,9 +203,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { validators, passwordStrength } from '@/utils/validators'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -224,22 +231,23 @@ const validationErrors = reactive({
   password: '',
 })
 
+const strength = computed(() => passwordStrength(form.password))
+
 function validateField(field: string): boolean {
+  let error: string | null = null
   switch (field) {
     case 'fullName':
-      if (!form.fullName.trim()) { validationErrors.fullName = 'Full name is required'; return false }
-      validationErrors.fullName = ''; return true
+      error = validators.fullName(form.fullName)
+      validationErrors.fullName = error || ''; return !error
     case 'licenseNumber':
-      if (!form.licenseNumber.trim()) { validationErrors.licenseNumber = 'License number is required'; return false }
-      validationErrors.licenseNumber = ''; return true
+      error = validators.licenseNumber(form.licenseNumber)
+      validationErrors.licenseNumber = error || ''; return !error
     case 'email':
-      if (!form.email.trim()) { validationErrors.email = 'Email is required'; return false }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) { validationErrors.email = 'Please enter a valid email'; return false }
-      validationErrors.email = ''; return true
+      error = validators.email(form.email)
+      validationErrors.email = error || ''; return !error
     case 'password':
-      if (!form.password) { validationErrors.password = 'Password is required'; return false }
-      if (form.password.length < 6) { validationErrors.password = 'Password must be at least 6 characters'; return false }
-      validationErrors.password = ''; return true
+      error = validators.password(form.password)
+      validationErrors.password = error || ''; return !error
     default: return true
   }
 }
@@ -261,6 +269,7 @@ async function handleRegister() {
       password: form.password,
       role: 'pharmacist',
       license_number: form.licenseNumber,
+      branch_location: form.branch || undefined,
     })
     router.push({ name: 'dashboard' })
   } catch (err: any) {
@@ -739,6 +748,30 @@ async function handleRegister() {
 .footer-dot {
   color: #9ca3af;
   font-size: 0.5rem;
+}
+
+.password-strength {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+}
+.strength-bar {
+  flex: 1;
+  height: 3px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.strength-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease, background 0.3s ease;
+}
+.strength-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 /* ─── Responsive ─── */

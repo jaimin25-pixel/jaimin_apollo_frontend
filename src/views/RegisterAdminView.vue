@@ -139,6 +139,12 @@
               </button>
             </div>
             <span v-if="validationErrors.password" class="field-error">{{ validationErrors.password }}</span>
+            <div v-if="form.password" class="password-strength">
+              <div class="strength-bar">
+                <div class="strength-fill" :style="{ width: `${(strength.score / 4) * 100}%`, background: strength.color }"></div>
+              </div>
+              <span class="strength-label" :style="{ color: strength.color }">{{ strength.label }}</span>
+            </div>
             <span class="field-hint">Must be at least 12 characters with symbols.</span>
           </div>
 
@@ -195,10 +201,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import logoSvg from '@/assets/images/logo.svg'
+import { validators, passwordStrength } from '@/utils/validators'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -227,25 +234,26 @@ const validationErrors = reactive({
   acknowledged: '',
 })
 
+const strength = computed(() => passwordStrength(form.password))
+
 function validateField(field: string): boolean {
+  let error: string | null = null
   switch (field) {
     case 'fullName':
-      if (!form.fullName.trim()) { validationErrors.fullName = 'Admin name is required'; return false }
-      validationErrors.fullName = ''; return true
+      error = validators.fullName(form.fullName)
+      validationErrors.fullName = error || ''; return !error
     case 'employeeId':
-      if (!form.employeeId.trim()) { validationErrors.employeeId = 'Employee ID is required'; return false }
-      validationErrors.employeeId = ''; return true
+      error = validators.employeeId(form.employeeId)
+      validationErrors.employeeId = error || ''; return !error
     case 'department':
-      if (!form.department) { validationErrors.department = 'Please select a department'; return false }
-      validationErrors.department = ''; return true
+      error = validators.required(form.department, 'Department')
+      validationErrors.department = error || ''; return !error
     case 'accessKey':
-      if (!form.accessKey.trim()) { validationErrors.accessKey = 'Access key is required'; return false }
-      validationErrors.accessKey = ''; return true
+      error = validators.accessKey(form.accessKey)
+      validationErrors.accessKey = error || ''; return !error
     case 'password':
-      if (!form.password) { validationErrors.password = 'Password is required'; return false }
-      if (form.password.length < 12) { validationErrors.password = 'Password must be at least 12 characters'; return false }
-      if (!/[!@#$%^&*(),.?":{}|<>]/.test(form.password)) { validationErrors.password = 'Password must contain at least one symbol'; return false }
-      validationErrors.password = ''; return true
+      error = validators.adminPassword(form.password)
+      validationErrors.password = error || ''; return !error
     case 'acknowledged':
       if (!form.acknowledged) { validationErrors.acknowledged = 'You must acknowledge the security protocol'; return false }
       validationErrors.acknowledged = ''; return true
@@ -268,7 +276,7 @@ async function handleRegister() {
       full_name: form.fullName,
       email: `${form.employeeId.toLowerCase()}@apollo.admin`,
       password: form.password,
-      role: 'ADMIN',
+      role: 'admin',
       employee_id: form.employeeId,
       department: form.department,
       access_key: form.accessKey,
@@ -733,6 +741,30 @@ async function handleRegister() {
   color: #6b7280;
   font-weight: 500;
   letter-spacing: 0.03em;
+}
+
+.password-strength {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+}
+.strength-bar {
+  flex: 1;
+  height: 3px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.strength-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease, background 0.3s ease;
+}
+.strength-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 /* ─── Responsive ─── */

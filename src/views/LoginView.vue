@@ -115,6 +115,12 @@
               </button>
             </div>
             <span v-if="validationErrors.password" class="field-error">{{ validationErrors.password }}</span>
+            <div v-if="password" class="password-strength">
+              <div class="strength-bar">
+                <div class="strength-fill" :style="{ width: `${(strength.score / 4) * 100}%`, background: strength.color }"></div>
+              </div>
+              <span class="strength-label" :style="{ color: strength.color }">{{ strength.label }}</span>
+            </div>
           </div>
 
           <!-- Remember Me & Forgot Password -->
@@ -124,7 +130,7 @@
               <span class="checkmark"></span>
               <span class="checkbox-label">Remember Me</span>
             </label>
-            <a href="#" class="forgot-link" @click.prevent>Forgot Password?</a>
+            <router-link to="/forgot-password" class="forgot-link">Forgot Password?</router-link>
           </div>
 
           <!-- Submit Button -->
@@ -144,7 +150,7 @@
         <!-- Register Link -->
         <p class="register-link">
           New to Apollo?
-          <router-link to="/register/patient">Create Account</router-link>
+          <router-link :to="`/register/${selectedRole.toLowerCase()}`">Create Account</router-link>
         </p>
       </div>
 
@@ -163,18 +169,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import type { UserRole } from '@/types'
 import logoSvg from '@/assets/images/logo.svg'
+import { validators, passwordStrength } from '@/utils/validators'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
 const email = ref('')
 const password = ref('')
-const selectedRole = ref<UserRole>('DOCTOR')
+const selectedRole = ref<UserRole>('doctor')
 const rememberMe = ref(false)
 const showPassword = ref(false)
 const isLoading = ref(false)
@@ -187,52 +194,39 @@ const validationErrors = reactive({
 
 const roles = [
   {
-    value: 'DOCTOR' as UserRole,
+    value: 'doctor' as UserRole,
     label: 'Doctor',
     icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.8 2.4h14.4c1.32 0 2.4 1.08 2.4 2.4v14.4c0 1.32-1.08 2.4-2.4 2.4H4.8c-1.32 0-2.4-1.08-2.4-2.4V4.8c0-1.32 1.08-2.4 2.4-2.4z"/><path d="M8 10h8M12 6v8"/><circle cx="12" cy="18" r="1" fill="currentColor" stroke="none"/></svg>`,
   },
   {
-    value: 'PATIENT' as UserRole,
+    value: 'patient' as UserRole,
     label: 'Patient',
     icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a5 5 0 0110 0v2"/><path d="M17 10l2 2 4-4"/></svg>`,
   },
   {
-    value: 'PHARMACIST' as UserRole,
+    value: 'pharmacist' as UserRole,
     label: 'Pharmacist',
     icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l-1.5 6H7.5L6 3z"/><rect x="5" y="9" width="14" height="12" rx="2"/><path d="M9 9v12M15 9v12M5 15h14"/></svg>`,
   },
   {
-    value: 'ADMIN' as UserRole,
+    value: 'admin' as UserRole,
     label: 'Admin',
     icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.09 4.26L19 7.27l-3.5 3.41.82 4.82L12 13.4l-4.32 2.1.82-4.82L5 7.27l4.91-1.01L12 2z"/><circle cx="12" cy="17" r="5"/><path d="M12 14v3l2 1"/></svg>`,
   },
 ]
 
+const strength = computed(() => passwordStrength(password.value))
+
 function validateEmail(): boolean {
-  if (!email.value.trim()) {
-    validationErrors.email = 'Email address is required'
-    return false
-  }
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!emailRegex.test(email.value)) {
-    validationErrors.email = 'Please enter a valid email address'
-    return false
-  }
-  validationErrors.email = ''
-  return true
+  const error = validators.email(email.value)
+  validationErrors.email = error || ''
+  return !error
 }
 
 function validatePassword(): boolean {
-  if (!password.value) {
-    validationErrors.password = 'Password is required'
-    return false
-  }
-  if (password.value.length < 4) {
-    validationErrors.password = 'Password must be at least 4 characters'
-    return false
-  }
-  validationErrors.password = ''
-  return true
+  const error = validators.loginPassword(password.value)
+  validationErrors.password = error || ''
+  return !error
 }
 
 async function handleLogin() {
@@ -702,6 +696,30 @@ async function handleLogin() {
 
 .footer-links a:hover {
   color: var(--primary);
+}
+
+.password-strength {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+}
+.strength-bar {
+  flex: 1;
+  height: 3px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.strength-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease, background 0.3s ease;
+}
+.strength-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 /* ─── Responsive ─── */
