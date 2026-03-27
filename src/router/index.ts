@@ -1,43 +1,18 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import LoginView from '@/views/LoginView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      name: 'login',
-      component: LoginView,
-      meta: { requiresGuest: true },
-    },
-    {
-      path: '/dashboard',
       name: 'dashboard',
-      component: () => import('@/views/LoginView.vue'), // placeholder
+      component: () => import('@/views/DashboardView.vue'),
       meta: { requiresAuth: true },
     },
     {
-      path: '/register/doctor',
-      name: 'register-doctor',
-      component: () => import('@/views/RegisterDoctorView.vue'),
-      meta: { requiresGuest: true },
-    },
-    {
-      path: '/register/patient',
-      name: 'register-patient',
-      component: () => import('@/views/RegisterPatientView.vue'),
-      meta: { requiresGuest: true },
-    },
-    {
-      path: '/register/pharmacist',
-      name: 'register-pharmacist',
-      component: () => import('@/views/RegisterPharmacistView.vue'),
-      meta: { requiresGuest: true },
-    },
-    {
-      path: '/register/admin',
-      name: 'register-admin',
-      component: () => import('@/views/RegisterAdminView.vue'),
+      path: '/login',
+      name: 'login',
+      component: () => import('@/views/LoginView.vue'),
       meta: { requiresGuest: true },
     },
     {

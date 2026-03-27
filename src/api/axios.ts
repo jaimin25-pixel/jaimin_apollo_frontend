@@ -24,7 +24,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('apollo_token')
       localStorage.removeItem('apollo_user')
-      window.location.href = '/'
+      window.location.href = '/login'
     }
     return Promise.reject(error)
   }

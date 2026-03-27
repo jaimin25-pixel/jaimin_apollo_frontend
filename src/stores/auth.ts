@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import { login as apiLogin, register as apiRegister, getMe } from '@/api/auth'
-import type { User, UserRole, RegisterRequest } from '@/types'
+import { login as apiLogin, register as apiRegister, getMe, logout as apiLogout } from '@/api/auth'
+import type { User, RegisterRequest } from '@/types'
 import { encryptPassword } from '@/utils/crypto'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -13,12 +13,12 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => !!token.value && !!user.value)
 
-  async function login(email: string, password: string, role: UserRole) {
+  async function login(email: string, password: string) {
     isLoading.value = true
     error.value = null
     try {
       const encryptedPassword = await encryptPassword(password)
-      const res = await apiLogin({ email, password: encryptedPassword, role })
+      const res = await apiLogin({ email, password: encryptedPassword })
       token.value = res.tokens.access_token
       refreshToken.value = res.tokens.refresh_token
       user.value = res.user
@@ -57,7 +57,12 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  function logout() {
+  async function logout() {
+    try {
+      await apiLogout()
+    } catch {
+      // ignore — clear local state regardless
+    }
     user.value = null
     token.value = null
     refreshToken.value = null

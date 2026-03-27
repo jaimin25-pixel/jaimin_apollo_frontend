@@ -35,7 +35,7 @@
         <!-- Form Header -->
         <div class="form-header">
           <h2>Login</h2>
-          <p>Please identify your role and enter your credentials</p>
+          <p>Enter your credentials to access the portal</p>
         </div>
 
         <!-- Error Message -->
@@ -45,24 +45,6 @@
             <path d="M8 4.5v4M8 10.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
           <span>{{ errorMessage }}</span>
-        </div>
-
-        <!-- Role Selector -->
-        <div class="role-selector">
-          <label class="field-label">Select Role</label>
-          <div class="role-cards">
-            <button
-              v-for="role in roles"
-              :key="role.value"
-              class="role-card"
-              :class="{ active: selectedRole === role.value }"
-              @click="selectedRole = role.value"
-              type="button"
-            >
-              <div class="role-icon" v-html="role.icon"></div>
-              <span class="role-name">{{ role.label }}</span>
-            </button>
-          </div>
         </div>
 
         <!-- Login Form -->
@@ -147,11 +129,6 @@
           </button>
         </form>
 
-        <!-- Register Link -->
-        <p class="register-link">
-          New to Apollo?
-          <router-link :to="`/register/${selectedRole.toLowerCase()}`">Create Account</router-link>
-        </p>
       </div>
 
       <!-- Footer -->
@@ -172,7 +149,6 @@
 import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import type { UserRole } from '@/types'
 import logoSvg from '@/assets/images/logo.svg'
 import { validators, passwordStrength } from '@/utils/validators'
 
@@ -181,7 +157,6 @@ const authStore = useAuthStore()
 
 const email = ref('')
 const password = ref('')
-const selectedRole = ref<UserRole>('doctor')
 const rememberMe = ref(false)
 const showPassword = ref(false)
 const isLoading = ref(false)
@@ -191,29 +166,6 @@ const validationErrors = reactive({
   email: '',
   password: '',
 })
-
-const roles = [
-  {
-    value: 'doctor' as UserRole,
-    label: 'Doctor',
-    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.8 2.4h14.4c1.32 0 2.4 1.08 2.4 2.4v14.4c0 1.32-1.08 2.4-2.4 2.4H4.8c-1.32 0-2.4-1.08-2.4-2.4V4.8c0-1.32 1.08-2.4 2.4-2.4z"/><path d="M8 10h8M12 6v8"/><circle cx="12" cy="18" r="1" fill="currentColor" stroke="none"/></svg>`,
-  },
-  {
-    value: 'patient' as UserRole,
-    label: 'Patient',
-    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a5 5 0 0110 0v2"/><path d="M17 10l2 2 4-4"/></svg>`,
-  },
-  {
-    value: 'pharmacist' as UserRole,
-    label: 'Pharmacist',
-    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l-1.5 6H7.5L6 3z"/><rect x="5" y="9" width="14" height="12" rx="2"/><path d="M9 9v12M15 9v12M5 15h14"/></svg>`,
-  },
-  {
-    value: 'admin' as UserRole,
-    label: 'Admin',
-    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.09 4.26L19 7.27l-3.5 3.41.82 4.82L12 13.4l-4.32 2.1.82-4.82L5 7.27l4.91-1.01L12 2z"/><circle cx="12" cy="17" r="5"/><path d="M12 14v3l2 1"/></svg>`,
-  },
-]
 
 const strength = computed(() => passwordStrength(password.value))
 
@@ -238,7 +190,7 @@ async function handleLogin() {
 
   isLoading.value = true
   try {
-    await authStore.login(email.value, password.value, selectedRole.value)
+    await authStore.login(email.value, password.value)
     router.push({ name: 'dashboard' })
   } catch (err: any) {
     errorMessage.value = err.message || 'Login failed. Please check your credentials and try again.'
@@ -408,65 +360,12 @@ async function handleLogin() {
   75% { transform: translateX(5px); }
 }
 
-/* ─── Role Selector ─── */
-.role-selector {
-  margin-bottom: 24px;
-}
-
 .field-label {
   display: block;
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 8px;
-}
-
-.role-cards {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-}
-
-.role-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 14px 8px;
-  background: var(--bg);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  color: var(--text-secondary);
-}
-
-.role-card:hover {
-  border-color: var(--primary-light);
-  background: #f0f7fa;
-  color: var(--primary);
-}
-
-.role-card.active {
-  border-color: var(--primary);
-  background: #eef6f9;
-  color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(26, 58, 74, 0.1);
-}
-
-.role-icon {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.role-name {
-  font-size: 0.75rem;
-  font-weight: 500;
-  white-space: nowrap;
 }
 
 /* ─── Form Fields ─── */
@@ -648,24 +547,6 @@ async function handleLogin() {
   to { transform: rotate(360deg); }
 }
 
-/* ─── Register Link ─── */
-.register-link {
-  text-align: center;
-  font-size: 0.8125rem;
-  color: var(--text-secondary);
-  margin-top: 24px;
-}
-
-.register-link a {
-  color: var(--primary);
-  font-weight: 600;
-  transition: color 0.2s ease;
-}
-
-.register-link a:hover {
-  text-decoration: underline;
-}
-
 /* ─── Footer ─── */
 .login-footer {
   display: flex;
@@ -766,10 +647,6 @@ async function handleLogin() {
 
   .form-container {
     max-width: 100%;
-  }
-
-  .role-cards {
-    grid-template-columns: repeat(2, 1fr);
   }
 
   .login-footer {

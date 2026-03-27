@@ -16,6 +16,10 @@ export async function getMe(): Promise<User> {
   return res.data.user
 }
 
+export async function logout(): Promise<void> {
+  await api.post('/auth/logout')
+}
+
 export async function forgotPassword(email: string): Promise<{ message: string; code?: string }> {
   const res = await api.post<{ message: string; code?: string }>('/auth/forgot-password', { email })
   return res.data

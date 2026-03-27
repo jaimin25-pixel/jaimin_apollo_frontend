@@ -4,56 +4,10 @@ export interface User {
   username: string
   full_name: string
   phone: string
-  role: UserRole
   is_active: boolean
   last_login_at?: string
   created_at: string
   updated_at: string
-  doctor_profile?: DoctorProfile
-  patient_profile?: PatientProfile
-  pharmacist_profile?: PharmacistProfile
-  admin_profile?: AdminProfile
-}
-
-export type UserRole = 'doctor' | 'patient' | 'pharmacist' | 'admin'
-
-export interface DoctorProfile {
-  id: string
-  license_number: string
-  specialization: string
-  qualification?: string
-  experience_years: number
-  consultation_fee: number
-  bio?: string
-  is_available: boolean
-}
-
-export interface PatientProfile {
-  id: string
-  date_of_birth?: string
-  gender?: string
-  blood_group?: string
-  insurance_id?: string
-  insurance_provider?: string
-  emergency_contact?: string
-  emergency_phone?: string
-  address?: string
-  allergies?: string
-}
-
-export interface PharmacistProfile {
-  id: string
-  license_number: string
-  branch_location?: string
-  shift?: string
-  is_on_duty: boolean
-}
-
-export interface AdminProfile {
-  id: string
-  employee_id: string
-  department: string
-  access_level: string
 }
 
 export interface TokenPair {
@@ -65,7 +19,6 @@ export interface TokenPair {
 export interface LoginRequest {
   email: string
   password: string
-  role: UserRole
 }
 
 export interface LoginResponse {
@@ -77,17 +30,7 @@ export interface RegisterRequest {
   full_name: string
   email: string
   password: string
-  role: UserRole
   phone?: string
-  license_number?: string
-  specialization?: string
-  branch_location?: string
-  employee_id?: string
-  department?: string
-  access_key?: string
-  date_of_birth?: string
-  insurance_id?: string
-  gender?: string
 }
 
 export interface RegisterResponse {
@@ -97,4 +40,23 @@ export interface RegisterResponse {
 
 export interface ApiError {
   error: string
+}
+
+export interface DashboardStats {
+  total_users: number
+  total_patients: number
+  appointments_today: number
+  available_beds: number
+}
+
+export interface AuditLogEntry {
+  id: string
+  action: string
+  ip_address: string
+  created_at: string
+}
+
+export interface DashboardData {
+  stats: DashboardStats
+  recent_activity: AuditLogEntry[]
 }
