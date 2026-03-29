@@ -5,9 +5,20 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'dashboard',
-      component: () => import('@/views/DashboardView.vue'),
-      meta: { requiresAuth: true },
+      redirect: (_to) => {
+        const stored = localStorage.getItem('apollo_user')
+        try {
+          if (stored) {
+            const user = JSON.parse(stored)
+            if (user.role === 'admin') {
+              return '/admin'
+            }
+          }
+        } catch (e) {
+          // ignore
+        }
+        return '/admin'
+      },
     },
     {
       path: '/login',
@@ -33,6 +44,49 @@ const router = createRouter({
       component: () => import('@/views/ResetPasswordView.vue'),
       meta: { requiresGuest: true },
     },
+    // Admin Module
+    {
+      path: '/admin',
+      component: () => import('@/views/admin/AdminLayout.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true },
+      children: [
+        {
+          path: '',
+          name: 'admin-dashboard',
+          component: () => import('@/views/admin/AdminDashboardView.vue'),
+        },
+        {
+          path: 'departments',
+          name: 'admin-departments',
+          component: () => import('@/views/admin/AdminDepartmentsView.vue'),
+        },
+        {
+          path: 'doctors',
+          name: 'admin-doctors',
+          component: () => import('@/views/admin/AdminDoctorsView.vue'),
+        },
+        {
+          path: 'staff',
+          name: 'admin-staff',
+          component: () => import('@/views/admin/AdminStaffView.vue'),
+        },
+        {
+          path: 'pharmacists',
+          name: 'admin-pharmacists',
+          component: () => import('@/views/admin/AdminPharmacistsView.vue'),
+        },
+        {
+          path: 'config',
+          name: 'admin-config',
+          component: () => import('@/views/admin/AdminConfigView.vue'),
+        },
+        {
+          path: 'reports',
+          name: 'admin-reports',
+          component: () => import('@/views/admin/AdminReportsView.vue'),
+        },
+      ],
+    },
   ],
 })
 
@@ -43,7 +97,21 @@ router.beforeEach((to, _from, next) => {
   if (to.meta.requiresAuth && !isAuthenticated) {
     next({ name: 'login' })
   } else if (to.meta.requiresGuest && isAuthenticated) {
-    next({ name: 'dashboard' })
+    next({ name: 'admin-dashboard' })
+  } else if (to.meta.requiresAdmin && isAuthenticated) {
+    try {
+      const stored = localStorage.getItem('apollo_user')
+      if (stored) {
+        const user = JSON.parse(stored)
+        if (user.role !== 'admin') {
+          next({ name: 'admin-dashboard' })
+          return
+        }
+      }
+    } catch {
+      // ignore parse errors
+    }
+    next()
   } else {
     next()
   }

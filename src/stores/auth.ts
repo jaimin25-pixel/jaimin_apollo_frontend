@@ -58,11 +58,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function logout() {
-    try {
-      await apiLogout()
-    } catch {
-      // ignore — clear local state regardless
-    }
+    // Clear local state first so the router guard sees unauthenticated immediately
     user.value = null
     token.value = null
     refreshToken.value = null
@@ -70,6 +66,12 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('apollo_token')
     localStorage.removeItem('apollo_refresh_token')
     localStorage.removeItem('apollo_user')
+    // Fire-and-forget audit log call
+    try {
+      await apiLogout()
+    } catch {
+      // ignore
+    }
   }
 
   async function checkAuth() {

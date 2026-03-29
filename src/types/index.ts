@@ -4,6 +4,7 @@ export interface User {
   username: string
   full_name: string
   phone: string
+  role: string
   is_active: boolean
   last_login_at?: string
   created_at: string
@@ -59,4 +60,183 @@ export interface AuditLogEntry {
 export interface DashboardData {
   stats: DashboardStats
   recent_activity: AuditLogEntry[]
+}
+
+// ── Admin Module Types ──────────────────────────────────────────────
+
+export interface Department {
+  dept_id: number
+  name: string
+  hod_doctor_id?: number
+  bed_count: number
+  ot_count: number
+  has_icu: boolean
+  status: string
+  created_at: string
+  hod_doctor?: Doctor
+}
+
+export interface Doctor {
+  doctor_id: number
+  doc_code: string
+  full_name: string
+  email: string
+  dept_id: number
+  specialization: string
+  qualification: string
+  phone?: string
+  joining_date: string
+  status: string
+  created_at: string
+  updated_at: string
+  department?: Department
+}
+
+export interface Staff {
+  staff_id: number
+  full_name: string
+  email: string
+  role: string
+  dept_id?: number
+  qualification?: string
+  employment_type: string
+  joining_date: string
+  status: string
+  created_at: string
+  updated_at: string
+  department?: Department
+}
+
+export interface Pharmacist {
+  pharmacist_id: number
+  full_name: string
+  email: string
+  license_number: string
+  phone?: string
+  status: string
+  created_at: string
+}
+
+export interface PartnerPharmacy {
+  partner_id: number
+  name: string
+  license_number: string
+  address: string
+  contact_phone?: string
+  contact_email?: string
+  status: string
+  created_at: string
+}
+
+export interface Medicine {
+  medicine_id: number
+  generic_name: string
+  brand_name?: string
+  category: string
+  unit: string
+  reorder_level: number
+  current_stock: number
+  status: string
+}
+
+export interface Admission {
+  admission_id: number
+  patient_id: number
+  admitting_doctor_id: number
+  admitted_at: string
+  status: string
+  patient?: { full_name: string; pat_code: string }
+  admitting_doctor?: { full_name: string }
+  department?: { name: string }
+}
+
+export interface Appointment {
+  appt_id: number
+  patient_id: number
+  doctor_id: number
+  scheduled_at: string
+  status: string
+  chief_complaint?: string
+  patient?: { full_name: string; pat_code: string }
+}
+
+export interface Prescription {
+  rx_id: number
+  doctor_id: number
+  patient_id: number
+  diagnosis?: string
+  status: string
+  created_at: string
+  patient?: { full_name: string; pat_code: string }
+}
+
+export interface HospitalConfig {
+  config_id: number
+  hospital_name: string
+  address: string
+  gst_number?: string
+  nabh_number?: string
+  contact_phone?: string
+  contact_email?: string
+  website?: string
+  updated_at: string
+}
+
+export interface BedSummary {
+  total: number
+  occupied: number
+  available: number
+  icu: number
+  emergency: number
+}
+
+export interface DeptDoctorStat {
+  dept_id: number
+  dept_name: string
+  doctor_count: number
+  active_count: number
+}
+
+export interface AdminDashboardData {
+  beds: BedSummary
+  dept_doctors: DeptDoctorStat[]
+  opd_appointments: number
+  ipd_admissions: number
+  discharges: number
+  stock_alerts: Medicine[]
+  emergency_admissions: Admission[]
+}
+
+export interface FinancialSummary {
+  total_invoices: number
+  total_revenue: number
+  total_paid: number
+  total_outstanding: number
+}
+
+export interface OccupancyReport {
+  dept_id: number
+  dept_name: string
+  total_beds: number
+  occupied: number
+}
+
+export interface PrescriptionReport {
+  doctor_id: number
+  doctor_name: string
+  dept_name: string
+  rx_count: number
+}
+
+export interface ExportResult {
+  entity: string
+  format: string
+  count: number
+  data: unknown
+}
+
+export interface DoctorDetail {
+  doctor: Doctor
+  appointments: Appointment[]
+  prescriptions: Prescription[]
 }
