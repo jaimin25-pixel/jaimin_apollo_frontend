@@ -181,9 +181,42 @@ const router = createRouter({
           component: () => import('@/views/receptionist/ReceptionistPatientCheckInView.vue'),
         },
         {
+          path: 'visitors',
+          name: 'receptionist-visitors',
+          component: () => import('@/views/receptionist/VisitorLogView.vue'),
+        },
+        {
           path: 'billing',
           name: 'receptionist-billing',
           component: () => import('@/views/receptionist/ReceptionistBillingView.vue'),
+        },
+      ],
+    },
+    // Pharmacist Module
+    {
+      path: '/pharmacist',
+      component: () => import('@/views/pharmacy/PharmacyLayout.vue'),
+      meta: { requiresAuth: true, requiresPharmacist: true },
+      children: [
+        {
+          path: '',
+          name: 'pharmacist-dashboard',
+          component: () => import('@/views/pharmacy/PharmacyDashboard.vue'),
+        },
+        {
+          path: 'inventory',
+          name: 'pharmacist-inventory',
+          component: () => import('@/views/pharmacy/InventoryPage.vue'),
+        },
+        {
+          path: 'inventory/:id',
+          name: 'pharmacist-medicine-detail',
+          component: () => import('@/views/pharmacy/MedicineDetailView.vue'),
+        },
+        {
+          path: 'partner-pharmacies',
+          name: 'pharmacist-partners',
+          component: () => import('@/views/pharmacy/PartnerPharmaciesPage.vue'),
         },
       ],
     },
@@ -253,6 +286,20 @@ router.beforeEach((to, _from, next) => {
         const user = JSON.parse(stored)
         const role = user.role?.toLowerCase()
         if (role !== 'receptionist' && role !== 'reception') {
+          next({ name: 'access-denied' })
+          return
+        }
+      }
+    } catch {
+      // ignore parse errors
+    }
+    next()
+  } else if (to.meta.requiresPharmacist && isAuthenticated) {
+    try {
+      const stored = localStorage.getItem('apollo_user')
+      if (stored) {
+        const user = JSON.parse(stored)
+        if (user.role?.toLowerCase() !== 'pharmacist') {
           next({ name: 'access-denied' })
           return
         }

@@ -1,231 +1,240 @@
 <template>
-  <div class="appointments-container">
-    <!-- Header Section -->
-    <div class="header-section">
-      <div>
-        <h1>Appointments</h1>
-        <p>Schedule and manage patient appointments</p>
+  <div class="appointments-view">
+    <!-- Header -->
+    <div class="page-header">
+      <h1>Appointments</h1>
+      <div class="header-actions">
+        <button class="btn-primary" @click="openBookModal()">+ Book Appointment</button>
+        <button class="btn-secondary" @click="openWalkInModal()">Walk-In</button>
       </div>
-      <button class="btn-primary" @click="showScheduleModal = true">
-        <span>+ Schedule Appointment</span>
-      </button>
     </div>
 
     <!-- Filters -->
-    <div class="filters">
-      <select v-model="filters.status" class="filter-input">
-        <option value="">All Status</option>
-        <option value="pending">Pending</option>
-        <option value="confirmed">Confirmed</option>
+    <div class="filters-bar">
+      <select v-model="filters.status" @change="loadAppointments" class="filter-select">
+        <option value="">All Statuses</option>
+        <option value="scheduled">Scheduled</option>
+        <option value="checked_in">Checked In</option>
+        <option value="in_consultation">In Consultation</option>
         <option value="completed">Completed</option>
         <option value="cancelled">Cancelled</option>
       </select>
-      <select v-model="filters.department" class="filter-input">
-        <option value="">All Departments</option>
-        <option value="cardiology">Cardiology</option>
-        <option value="neurology">Neurology</option>
-        <option value="orthopedics">Orthopedics</option>
-        <option value="pediatrics">Pediatrics</option>
-        <option value="general">General</option>
-      </select>
-      <input
-        v-model="filters.date"
-        type="date"
-        class="filter-input"
-      />
+      <input v-model="filters.date" type="date" class="filter-input" @change="loadAppointments" />
+      <button class="btn-ghost" @click="resetFilters">Reset</button>
     </div>
 
-    <!-- Upcoming Appointments Calendar -->
-    <div class="calendar-section">
-      <div class="calendar-header">
-        <button @click="previousWeek" class="btn-nav">&lt;</button>
-        <h3>{{ weekLabel }}</h3>
-        <button @click="nextWeek" class="btn-nav">&gt;</button>
-      </div>
-      <div class="weekdays">
-        <div
-          v-for="day in weekDays"
-          :key="day.date"
-          class="day-column"
-          :class="{ 'is-today': day.isToday }"
-        >
-          <div class="day-header">
-            <span class="day-name">{{ day.name }}</span>
-            <span class="day-date">{{ day.date }}</span>
-          </div>
-          <div class="time-slots">
-            <div
-              v-for="slot in getAppointmentsForDay(day.date)"
-              :key="slot.id"
-              class="time-slot"
-              :class="slot.status"
-              @click="selectAppointment(slot)"
-            >
-              <div class="slot-time">{{ slot.time }}</div>
-              <div class="slot-patient">{{ slot.patientName }}</div>
-              <div class="slot-doctor">{{ slot.doctorName }}</div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <!-- Error -->
+    <div v-if="store.error" class="alert-danger">{{ store.error }}</div>
+
+    <!-- Loading -->
+    <div v-if="store.loading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading appointments...</p>
     </div>
 
-    <!-- Appointments List -->
-    <div class="appointments-list-section">
-      <h3>All Appointments</h3>
-      <div class="table-responsive">
-        <table class="appointments-table">
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Patient</th>
-              <th>Doctor</th>
-              <th>Department</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="apt in filteredAppointments" :key="apt.id" class="apt-row">
-              <td class="apt-time">{{ apt.time }}</td>
-              <td class="apt-patient">{{ apt.patientName }}</td>
-              <td class="apt-doctor">{{ apt.doctorName }}</td>
-              <td class="apt-dept">{{ apt.department }}</td>
-              <td class="apt-status">
-                <span class="status-badge" :class="apt.status">{{ apt.status }}</span>
-              </td>
-              <td class="apt-actions">
-                <button
-                  class="btn-small btn-info"
-                  @click="selectAppointment(apt)"
-                >
-                  View
-                </button>
-                <button
-                  v-if="apt.status === 'pending'"
-                  class="btn-small btn-success"
-                  @click="confirmAppointment(apt.id)"
-                >
-                  Confirm
-                </button>
-                <button
-                  class="btn-small btn-danger"
-                  @click="cancelAppointment(apt.id)"
-                >
-                  Cancel
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    <!-- Table -->
+    <div v-else class="table-container">
+      <div v-if="store.appointments.length === 0" class="no-data">
+        No appointments found for the selected filters.
       </div>
+      <table v-else class="appt-table">
+        <thead>
+          <tr>
+            <th>Token</th>
+            <th>Time</th>
+            <th>Patient</th>
+            <th>Doctor</th>
+            <th>Department</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="appt in store.appointments" :key="appt.appt_id">
+            <td class="token-cell">
+              <span v-if="appt.queue_token" class="queue-token">{{ appt.queue_token }}</span>
+              <span v-else class="no-token">—</span>
+            </td>
+            <td>{{ formatTime(appt.scheduled_at) }}</td>
+            <td>
+              <div class="patient-info">
+                <span class="patient-name">{{ appt.patient?.full_name ?? '—' }}</span>
+                <span class="pat-code">{{ appt.patient?.pat_code }}</span>
+              </div>
+            </td>
+            <td>{{ appt.doctor?.full_name ?? '—' }}</td>
+            <td>{{ appt.department?.name ?? '—' }}</td>
+            <td>
+              <span :class="['status-badge', `status-${appt.status}`]">
+                {{ formatStatus(appt.status) }}
+              </span>
+            </td>
+            <td class="actions-cell">
+              <button
+                v-if="appt.status === 'scheduled'"
+                class="btn-sm btn-success"
+                @click="handleCheckIn(appt.appt_id)"
+                :disabled="store.loading"
+              >Check In</button>
+              <button
+                v-if="appt.status === 'scheduled'"
+                class="btn-sm btn-warning"
+                @click="openRescheduleModal(appt)"
+              >Reschedule</button>
+              <button
+                v-if="appt.status === 'scheduled' || appt.status === 'checked_in'"
+                class="btn-sm btn-danger"
+                @click="handleCancel(appt.appt_id)"
+                :disabled="store.loading"
+              >Cancel</button>
+              <button class="btn-sm btn-ghost" @click="printSlip(appt.appt_id)">Slip</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
-    <!-- Schedule Appointment Modal -->
-    <div v-if="showScheduleModal" class="modal-overlay" @click.self="showScheduleModal = false">
-      <div class="modal-content">
+    <!-- Book Appointment Modal -->
+    <div v-if="showBookModal" class="modal-overlay" @click.self="showBookModal = false">
+      <div class="modal">
         <div class="modal-header">
-          <h2>Schedule New Appointment</h2>
-          <button class="btn-close" @click="showScheduleModal = false">&times;</button>
+          <h2>Book Appointment</h2>
+          <button class="modal-close" @click="showBookModal = false">✕</button>
         </div>
-        <div class="modal-body">
+        <form @submit.prevent="submitBook" class="modal-form">
           <div class="form-group">
-            <label>Patient ID:</label>
-            <input v-model="scheduleForm.patientId" placeholder="Enter patient ID" class="form-input" />
+            <label>Patient ID *</label>
+            <input v-model.number="bookForm.patient_id" type="number" min="1" required class="form-control" />
           </div>
           <div class="form-group">
-            <label>Doctor:</label>
-            <select v-model="scheduleForm.doctorId" class="form-input">
-              <option value="">Select Doctor</option>
-              <option value="doc1">Dr. Rajesh Kumar</option>
-              <option value="doc2">Dr. Priya Sharma</option>
-              <option value="doc3">Dr. Amit Verma</option>
-              <option value="doc4">Dr. Neha Patel</option>
-            </select>
+            <label>Doctor ID *</label>
+            <input v-model.number="bookForm.doctor_id" type="number" min="1" required class="form-control" />
           </div>
           <div class="form-group">
-            <label>Appointment Date:</label>
-            <input v-model="scheduleForm.date" type="date" class="form-input" />
+            <label>Department ID *</label>
+            <input v-model.number="bookForm.dept_id" type="number" min="1" required class="form-control" />
           </div>
           <div class="form-group">
-            <label>Time:</label>
-            <input v-model="scheduleForm.time" type="time" class="form-input" />
+            <label>Scheduled At *</label>
+            <input v-model="bookForm.scheduled_at" type="datetime-local" required class="form-control" />
           </div>
           <div class="form-group">
-            <label>Chief Complaint:</label>
-            <textarea v-model="scheduleForm.chiefComplaint" placeholder="Reason for visit" class="form-input"></textarea>
+            <label>Chief Complaint</label>
+            <textarea v-model="bookForm.chief_complaint" rows="2" class="form-control" placeholder="Reason for visit"></textarea>
           </div>
-          <div class="form-group">
-            <label>
-              <input v-model="scheduleForm.isUrgent" type="checkbox" />
-              Mark as Urgent
-            </label>
+          <div v-if="store.error" class="alert-danger">{{ store.error }}</div>
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" @click="showBookModal = false">Cancel</button>
+            <button type="submit" class="btn-primary" :disabled="store.loading">
+              {{ store.loading ? 'Booking...' : 'Book Appointment' }}
+            </button>
           </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn-secondary" @click="showScheduleModal = false">Cancel</button>
-          <button class="btn-primary" @click="submitScheduleForm">Schedule</button>
-        </div>
+        </form>
       </div>
     </div>
 
-    <!-- Appointment Detail Modal -->
-    <div v-if="selectedAppointment && showDetailModal" class="modal-overlay" @click.self="showDetailModal = false">
-      <div class="modal-content modal-lg">
+    <!-- Walk-In Modal -->
+    <div v-if="showWalkInModal" class="modal-overlay" @click.self="showWalkInModal = false">
+      <div class="modal">
         <div class="modal-header">
-          <h2>Appointment Details</h2>
-          <button class="btn-close" @click="showDetailModal = false">&times;</button>
+          <h2>Walk-In Registration</h2>
+          <button class="modal-close" @click="showWalkInModal = false">✕</button>
         </div>
-        <div class="modal-body">
-          <div class="detail-grid">
-            <div class="detail-item">
-              <label>Patient Name:</label>
-              <p>{{ selectedAppointment.patientName }}</p>
-            </div>
-            <div class="detail-item">
-              <label>Phone:</label>
-              <p>{{ selectedAppointment.patientPhone }}</p>
-            </div>
-            <div class="detail-item">
-              <label>Doctor:</label>
-              <p>{{ selectedAppointment.doctorName }}</p>
-            </div>
-            <div class="detail-item">
-              <label>Department:</label>
-              <p>{{ selectedAppointment.department }}</p>
-            </div>
-            <div class="detail-item">
-              <label>Date & Time:</label>
-              <p>{{ selectedAppointment.date }} at {{ selectedAppointment.time }}</p>
-            </div>
-            <div class="detail-item">
-              <label>Status:</label>
-              <p>
-                <span class="status-badge" :class="selectedAppointment.status">
-                  {{ selectedAppointment.status }}
-                </span>
-              </p>
-            </div>
-            <div class="detail-item full-width">
-              <label>Chief Complaint:</label>
-              <p>{{ selectedAppointment.chiefComplaint }}</p>
-            </div>
-            <div class="detail-item full-width">
-              <label>Notes:</label>
-              <textarea v-model="selectedAppointment.notes" placeholder="Add notes..." class="form-input"></textarea>
-            </div>
+        <form @submit.prevent="submitWalkIn" class="modal-form">
+          <div class="form-group">
+            <label>Patient ID *</label>
+            <input v-model.number="walkInForm.patient_id" type="number" min="1" required class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Doctor ID *</label>
+            <input v-model.number="walkInForm.doctor_id" type="number" min="1" required class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Department ID *</label>
+            <input v-model.number="walkInForm.dept_id" type="number" min="1" required class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Chief Complaint</label>
+            <textarea v-model="walkInForm.chief_complaint" rows="2" class="form-control" placeholder="Reason for visit"></textarea>
+          </div>
+          <div v-if="store.error" class="alert-danger">{{ store.error }}</div>
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" @click="showWalkInModal = false">Cancel</button>
+            <button type="submit" class="btn-primary" :disabled="store.loading">
+              {{ store.loading ? 'Processing...' : 'Register Walk-In' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Reschedule Modal -->
+    <div v-if="showRescheduleModal" class="modal-overlay" @click.self="showRescheduleModal = false">
+      <div class="modal">
+        <div class="modal-header">
+          <h2>Reschedule Appointment</h2>
+          <button class="modal-close" @click="showRescheduleModal = false">✕</button>
+        </div>
+        <form @submit.prevent="submitReschedule" class="modal-form">
+          <p class="reschedule-info">
+            Patient: <strong>{{ selectedAppt?.patient?.full_name }}</strong>
+          </p>
+          <div class="form-group">
+            <label>New Date & Time *</label>
+            <input v-model="rescheduleTime" type="datetime-local" required class="form-control" />
+          </div>
+          <div v-if="store.error" class="alert-danger">{{ store.error }}</div>
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" @click="showRescheduleModal = false">Cancel</button>
+            <button type="submit" class="btn-primary" :disabled="store.loading">
+              {{ store.loading ? 'Saving...' : 'Reschedule' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Appointment Slip Modal -->
+    <div v-if="slipData" class="modal-overlay" @click.self="slipData = null">
+      <div class="modal slip-modal">
+        <div class="modal-header">
+          <h2>Appointment Slip</h2>
+          <div class="header-btns">
+            <button class="btn-primary btn-sm" onclick="window.print()">🖨 Print</button>
+            <button class="modal-close" @click="slipData = null">✕</button>
           </div>
         </div>
-        <div class="modal-footer">
-          <button class="btn-secondary" @click="showDetailModal = false">Close</button>
-          <button
-            v-if="selectedAppointment.status === 'pending'"
-            class="btn-success"
-            @click="confirmAppointment(selectedAppointment.id)"
-          >
-            Confirm
-          </button>
-          <button class="btn-danger" @click="cancelAppointment(selectedAppointment.id)">Cancel</button>
+        <div class="slip-content printable">
+          <div class="slip-header-card">
+            <h3>Apollo Hospital</h3>
+            <p>Appointment Slip</p>
+          </div>
+          <div class="slip-body">
+            <div class="slip-row">
+              <span class="slip-label">Queue Token</span>
+              <span class="slip-value token-large">{{ slipData.queue_token || 'N/A' }}</span>
+            </div>
+            <div class="slip-row">
+              <span class="slip-label">Patient</span>
+              <span class="slip-value">{{ slipData.patient?.full_name }} ({{ slipData.patient?.pat_code }})</span>
+            </div>
+            <div class="slip-row">
+              <span class="slip-label">Doctor</span>
+              <span class="slip-value">{{ slipData.doctor?.full_name }}</span>
+            </div>
+            <div class="slip-row">
+              <span class="slip-label">Department</span>
+              <span class="slip-value">{{ slipData.department?.name }}</span>
+            </div>
+            <div class="slip-row">
+              <span class="slip-label">Scheduled At</span>
+              <span class="slip-value">{{ formatDateTime(slipData.scheduled_at) }}</span>
+            </div>
+            <div v-if="slipData.chief_complaint" class="slip-row">
+              <span class="slip-label">Chief Complaint</span>
+              <span class="slip-value">{{ slipData.chief_complaint }}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -233,628 +242,179 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
+import { useReceptionistStore } from '@/stores/receptionist'
+import { getAppointmentSlip } from '@/api/receptionist'
+import type { AppointmentFull, AppointmentSlip } from '@/types'
 
-interface Appointment {
-  id: string
-  patientName: string
-  patientPhone: string
-  patientId: string
-  doctorName: string
-  doctorId: string
-  department: string
-  date: string
-  time: string
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled'
-  chiefComplaint: string
-  notes: string
-  isUrgent: boolean
+const store = useReceptionistStore()
+
+const filters = reactive({ status: '', date: new Date().toISOString().split('T')[0] })
+
+const showBookModal = ref(false)
+const showWalkInModal = ref(false)
+const showRescheduleModal = ref(false)
+const selectedAppt = ref<AppointmentFull | null>(null)
+const rescheduleTime = ref('')
+const slipData = ref<AppointmentSlip | null>(null)
+
+const bookForm = reactive({ patient_id: 0, doctor_id: 0, dept_id: 0, scheduled_at: '', chief_complaint: '' })
+const walkInForm = reactive({ patient_id: 0, doctor_id: 0, dept_id: 0, chief_complaint: '' })
+
+function loadAppointments() {
+  store.fetchAppointments({ status: filters.status || undefined, date: filters.date || undefined })
 }
 
-// Sample data
-const appointments = ref<Appointment[]>([
-  {
-    id: 'apt1',
-    patientName: 'Raj Kumar',
-    patientPhone: '+91-9876543210',
-    patientId: 'P001',
-    doctorName: 'Dr. Rajesh Kumar',
-    doctorId: 'doc1',
-    department: 'Cardiology',
-    date: '2024-01-15',
-    time: '10:30',
-    status: 'confirmed',
-    chiefComplaint: 'Chest pain and shortness of breath',
-    notes: '',
-    isUrgent: true,
-  },
-  {
-    id: 'apt2',
-    patientName: 'Priya Singh',
-    patientPhone: '+91-9876543211',
-    patientId: 'P002',
-    doctorName: 'Dr. Priya Sharma',
-    doctorId: 'doc2',
-    department: 'Neurology',
-    date: '2024-01-15',
-    time: '11:00',
-    status: 'pending',
-    chiefComplaint: 'Recurring headaches',
-    notes: '',
-    isUrgent: false,
-  },
-  {
-    id: 'apt3',
-    patientName: 'Amit Patel',
-    patientPhone: '+91-9876543212',
-    patientId: 'P003',
-    doctorName: 'Dr. Amit Verma',
-    doctorId: 'doc3',
-    department: 'Orthopedics',
-    date: '2024-01-16',
-    time: '14:00',
-    status: 'confirmed',
-    chiefComplaint: 'Knee injury',
-    notes: '',
-    isUrgent: false,
-  },
-  {
-    id: 'apt4',
-    patientName: 'Neha Gupta',
-    patientPhone: '+91-9876543213',
-    patientId: 'P004',
-    doctorName: 'Dr. Neha Patel',
-    doctorId: 'doc4',
-    department: 'Pediatrics',
-    date: '2024-01-16',
-    time: '15:30',
-    status: 'completed',
-    chiefComplaint: 'Fever and cold',
-    notes: 'Follow-up in 1 week',
-    isUrgent: false,
-  },
-])
+function resetFilters() {
+  filters.status = ''
+  filters.date = new Date().toISOString().split('T')[0]
+  loadAppointments()
+}
 
-const filters = ref({
-  status: '',
-  department: '',
-  date: '',
-})
+function openBookModal() {
+  store.clearError()
+  Object.assign(bookForm, { patient_id: 0, doctor_id: 0, dept_id: 0, scheduled_at: '', chief_complaint: '' })
+  showBookModal.value = true
+}
 
-const showScheduleModal = ref(false)
-const showDetailModal = ref(false)
-const selectedAppointment = ref<Appointment | null>(null)
-const currentWeekStart = ref(new Date(2024, 0, 15))
+function openWalkInModal() {
+  store.clearError()
+  Object.assign(walkInForm, { patient_id: 0, doctor_id: 0, dept_id: 0, chief_complaint: '' })
+  showWalkInModal.value = true
+}
 
-const scheduleForm = ref({
-  patientId: '',
-  doctorId: '',
-  date: '',
-  time: '',
-  chiefComplaint: '',
-  isUrgent: false,
-})
+function openRescheduleModal(appt: AppointmentFull) {
+  store.clearError()
+  selectedAppt.value = appt
+  rescheduleTime.value = new Date(appt.scheduled_at).toISOString().slice(0, 16)
+  showRescheduleModal.value = true
+}
 
-const weekDays = computed(() => {
-  const days = []
-  for (let i = 0; i < 7; i++) {
-    const date = new Date(currentWeekStart.value)
-    date.setDate(date.getDate() + i)
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-    const today = new Date()
-    const isToday = date.toDateString() === today.toDateString()
-
-    days.push({
-      date: date.toISOString().split('T')[0],
-      name: dayNames[date.getDay()],
-      isToday,
-    })
-  }
-  return days
-})
-
-const weekLabel = computed(() => {
-  const start = currentWeekStart.value.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-  const end = new Date(currentWeekStart.value)
-  end.setDate(end.getDate() + 6)
-  const endStr = end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-  return `${start} - ${endStr}`
-})
-
-const filteredAppointments = computed(() => {
-  return appointments.value.filter((apt) => {
-    if (filters.value.status && apt.status !== filters.value.status) return false
-    if (filters.value.department && apt.department !== filters.value.department) return false
-    if (filters.value.date && apt.date !== filters.value.date) return false
-    return true
+async function submitBook() {
+  const result = await store.bookAppointment({
+    patient_id: bookForm.patient_id,
+    doctor_id: bookForm.doctor_id,
+    dept_id: bookForm.dept_id,
+    scheduled_at: new Date(bookForm.scheduled_at).toISOString(),
+    chief_complaint: bookForm.chief_complaint,
   })
-})
-
-const previousWeek = () => {
-  const date = new Date(currentWeekStart.value)
-  date.setDate(date.getDate() - 7)
-  currentWeekStart.value = date
+  if (result) showBookModal.value = false
 }
 
-const nextWeek = () => {
-  const date = new Date(currentWeekStart.value)
-  date.setDate(date.getDate() + 7)
-  currentWeekStart.value = date
+async function submitWalkIn() {
+  const result = await store.walkIn({
+    patient_id: walkInForm.patient_id,
+    doctor_id: walkInForm.doctor_id,
+    dept_id: walkInForm.dept_id,
+    chief_complaint: walkInForm.chief_complaint,
+  })
+  if (result) showWalkInModal.value = false
 }
 
-const getAppointmentsForDay = (date: string) => {
-  return appointments.value.filter((apt) => apt.date === date).slice(0, 3)
+async function submitReschedule() {
+  if (!selectedAppt.value) return
+  const ok = await store.reschedule(selectedAppt.value.appt_id, new Date(rescheduleTime.value).toISOString())
+  if (ok) { showRescheduleModal.value = false; loadAppointments() }
 }
 
-const selectAppointment = (apt: Appointment) => {
-  selectedAppointment.value = apt
-  showDetailModal.value = true
+async function handleCheckIn(id: number) { await store.checkIn(id) }
+
+async function handleCancel(id: number) {
+  if (!confirm('Cancel this appointment?')) return
+  await store.cancelAppt(id)
 }
 
-const confirmAppointment = (id: string) => {
-  const apt = appointments.value.find((a) => a.id === id)
-  if (apt) {
-    apt.status = 'confirmed'
-  }
-  showDetailModal.value = false
+async function printSlip(id: number) {
+  try { slipData.value = await getAppointmentSlip(id) }
+  catch { alert('Failed to load appointment slip') }
 }
 
-const cancelAppointment = (id: string) => {
-  const apt = appointments.value.find((a) => a.id === id)
-  if (apt) {
-    apt.status = 'cancelled'
-  }
-  showDetailModal.value = false
+function formatTime(dt: string) {
+  return new Date(dt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })
+}
+function formatDateTime(dt: string) {
+  return new Date(dt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
+}
+function formatStatus(s: string) {
+  return s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
 
-const submitScheduleForm = () => {
-  if (!scheduleForm.value.patientId || !scheduleForm.value.doctorId) {
-    alert('Please fill in all required fields')
-    return
-  }
-
-  const newApt: Appointment = {
-    id: `apt${Date.now()}`,
-    patientName: 'New Patient',
-    patientPhone: '',
-    patientId: scheduleForm.value.patientId,
-    doctorName: [
-      'Dr. Rajesh Kumar',
-      'Dr. Priya Sharma',
-      'Dr. Amit Verma',
-      'Dr. Neha Patel',
-    ][
-      ['doc1', 'doc2', 'doc3', 'doc4'].indexOf(scheduleForm.value.doctorId)
-    ] || 'Unknown',
-    doctorId: scheduleForm.value.doctorId,
-    department: 'General',
-    date: scheduleForm.value.date,
-    time: scheduleForm.value.time,
-    status: 'pending',
-    chiefComplaint: scheduleForm.value.chiefComplaint,
-    notes: '',
-    isUrgent: scheduleForm.value.isUrgent,
-  }
-
-  appointments.value.push(newApt)
-  showScheduleModal.value = false
-  scheduleForm.value = {
-    patientId: '',
-    doctorId: '',
-    date: '',
-    time: '',
-    chiefComplaint: '',
-    isUrgent: false,
-  }
-}
+onMounted(loadAppointments)
 </script>
 
 <style scoped>
-.appointments-container {
-  padding: 2rem;
-  background: #f8f9fa;
-  min-height: 100vh;
-}
+.appointments-view { animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-.header-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.page-header h1 { margin: 0; color: #333; font-size: 1.8rem; }
+.header-actions { display: flex; gap: 0.75rem; }
 
-.header-section h1 {
-  font-size: 2rem;
-  color: #333;
-  margin: 0;
-}
+.filters-bar { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center; }
+.filter-select, .filter-input { padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.9rem; background: white; }
 
-.header-section p {
-  color: #666;
-  margin: 0.5rem 0 0 0;
-}
+.alert-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1rem; }
 
-.btn-primary {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  font-weight: 600;
-  transition: transform 0.2s;
-}
+.loading-state { display: flex; flex-direction: column; align-items: center; padding: 3rem; color: #666; gap: 1rem; }
+.spinner { width: 36px; height: 36px; border: 4px solid #f0f0f0; border-top-color: #667eea; border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-.btn-primary:hover {
-  transform: translateY(-2px);
-}
+.table-container { background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: auto; }
+.no-data { text-align: center; padding: 3rem; color: #888; }
+.appt-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.appt-table th { background: #f8fafc; padding: 0.75rem 1rem; text-align: left; font-size: 0.8rem; text-transform: uppercase; color: #6b7280; letter-spacing: 0.05em; border-bottom: 1px solid #e5e7eb; }
+.appt-table td { padding: 0.85rem 1rem; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+.appt-table tr:last-child td { border-bottom: none; }
+.appt-table tr:hover td { background: #f9fafb; }
 
-.filters {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
+.queue-token { background: #667eea; color: white; padding: 0.2rem 0.6rem; border-radius: 4px; font-weight: 600; font-size: 0.85rem; }
+.no-token { color: #ccc; }
+.patient-info { display: flex; flex-direction: column; gap: 0.1rem; }
+.patient-name { font-weight: 600; color: #111; }
+.pat-code { font-size: 0.78rem; color: #6b7280; }
 
-.filter-input {
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 0.5rem;
-  font-size: 0.9rem;
-}
+.status-badge { padding: 0.25rem 0.65rem; border-radius: 20px; font-size: 0.8rem; font-weight: 500; white-space: nowrap; }
+.status-scheduled       { background: #dbeafe; color: #1e40af; }
+.status-checked_in      { background: #fef9c3; color: #854d0e; }
+.status-in_consultation { background: #fce7f3; color: #9d174d; }
+.status-completed       { background: #dcfce7; color: #166534; }
+.status-cancelled       { background: #f3f4f6; color: #6b7280; }
 
-/* Calendar Section */
-.calendar-section {
-  background: white;
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
+.actions-cell { display: flex; gap: 0.4rem; flex-wrap: wrap; }
 
-.calendar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
+.btn-primary  { background: #667eea; color: white; border: none; padding: 0.55rem 1.2rem; border-radius: 6px; cursor: pointer; font-weight: 500; }
+.btn-primary:hover { background: #5a6fd6; }
+.btn-secondary { background: white; color: #667eea; border: 1px solid #667eea; padding: 0.55rem 1.2rem; border-radius: 6px; cursor: pointer; font-weight: 500; }
+.btn-ghost { background: transparent; color: #6b7280; border: 1px solid #d1d5db; padding: 0.55rem 1rem; border-radius: 6px; cursor: pointer; }
+.btn-sm { padding: 0.3rem 0.7rem; border-radius: 5px; font-size: 0.8rem; border: none; cursor: pointer; font-weight: 500; }
+.btn-sm:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-success { background: #16a34a; color: white; }
+.btn-warning { background: #d97706; color: white; }
+.btn-danger  { background: #dc2626; color: white; }
+.btn-ghost.btn-sm { background: transparent; color: #6b7280; border: 1px solid #d1d5db; }
 
-.btn-nav {
-  background: #f0f0f0;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  font-weight: bold;
-}
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.modal { background: white; border-radius: 12px; width: 90%; max-width: 480px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+.slip-modal { max-width: 400px; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb; }
+.modal-header h2 { margin: 0; font-size: 1.2rem; color: #111; }
+.modal-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #6b7280; }
+.header-btns { display: flex; gap: 0.5rem; align-items: center; }
+.modal-form { padding: 1.5rem; }
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; font-size: 0.85rem; font-weight: 500; color: #374151; margin-bottom: 0.4rem; }
+.form-control { width: 100%; padding: 0.55rem 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.9rem; box-sizing: border-box; }
+.form-control:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+textarea.form-control { resize: vertical; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.25rem; }
+.reschedule-info { color: #374151; margin-bottom: 1rem; }
 
-.weekdays {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 1rem;
-}
-
-.day-column {
-  background: #f9f9f9;
-  border-radius: 0.5rem;
-  padding: 1rem;
-  border: 2px solid transparent;
-}
-
-.day-column.is-today {
-  background: #e8f4f8;
-  border-color: #667eea;
-}
-
-.day-header {
-  margin-bottom: 1rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 2px solid #ddd;
-}
-
-.day-name {
-  font-weight: bold;
-  color: #333;
-  display: block;
-}
-
-.day-date {
-  color: #666;
-  font-size: 0.9rem;
-}
-
-.time-slots {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.time-slot {
-  background: white;
-  padding: 0.75rem;
-  border-radius: 0.25rem;
-  cursor: pointer;
-  border-left: 3px solid #667eea;
-  transition: all 0.2s;
-}
-
-.time-slot:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transform: translateX(2px);
-}
-
-.time-slot.confirmed {
-  border-left-color: #27ae60;
-}
-
-.time-slot.pending {
-  border-left-color: #f39c12;
-}
-
-.time-slot.cancelled {
-  border-left-color: #e74c3c;
-  opacity: 0.6;
-}
-
-.slot-time {
-  font-weight: bold;
-  font-size: 0.85rem;
-  color: #333;
-}
-
-.slot-patient {
-  font-size: 0.75rem;
-  color: #666;
-}
-
-.slot-doctor {
-  font-size: 0.7rem;
-  color: #999;
-}
-
-/* Appointments List */
-.appointments-list-section {
-  background: white;
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.appointments-list-section h3 {
-  margin-top: 0;
-  margin-bottom: 1.5rem;
-  color: #333;
-}
-
-.table-responsive {
-  overflow-x: auto;
-}
-
-.appointments-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.appointments-table thead {
-  background: #f5f5f5;
-  border-bottom: 2px solid #ddd;
-}
-
-.appointments-table th {
-  padding: 1rem;
-  text-align: left;
-  font-weight: 600;
-  color: #333;
-}
-
-.appointments-table td {
-  padding: 1rem;
-  border-bottom: 1px solid #eee;
-}
-
-.apt-row:hover {
-  background: #f9f9f9;
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.status-badge.pending {
-  background: #fff3cd;
-  color: #856404;
-}
-
-.status-badge.confirmed {
-  background: #d4edda;
-  color: #155724;
-}
-
-.status-badge.completed {
-  background: #cfe2ff;
-  color: #084298;
-}
-
-.status-badge.cancelled {
-  background: #f8d7da;
-  color: #721c24;
-}
-
-.apt-actions {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.btn-small {
-  padding: 0.4rem 0.8rem;
-  border: none;
-  border-radius: 0.25rem;
-  cursor: pointer;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.btn-info {
-  background: #667eea;
-  color: white;
-}
-
-.btn-success {
-  background: #27ae60;
-  color: white;
-}
-
-.btn-danger {
-  background: #e74c3c;
-  color: white;
-}
-
-/* Modals */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: white;
-  border-radius: 0.75rem;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  width: 90%;
-  max-width: 500px;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.modal-content.modal-lg {
-  max-width: 700px;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
-  border-bottom: 1px solid #eee;
-}
-
-.modal-header h2 {
-  margin: 0;
-  color: #333;
-}
-
-.btn-close {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: #666;
-  cursor: pointer;
-}
-
-.modal-body {
-  padding: 1.5rem;
-}
-
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #333;
-  font-weight: 600;
-}
-
-.form-input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 0.5rem;
-  font-size: 0.9rem;
-  font-family: inherit;
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.form-group input[type='checkbox'] {
-  margin-right: 0.5rem;
-}
-
-.detail-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-}
-
-.detail-item.full-width {
-  grid-column: 1 / -1;
-}
-
-.detail-item label {
-  color: #666;
-  font-size: 0.85rem;
-  margin-bottom: 0.5rem;
-  display: block;
-}
-
-.detail-item p {
-  color: #333;
-  margin: 0;
-}
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  padding: 1.5rem;
-  border-top: 1px solid #eee;
-}
-
-.btn-secondary {
-  background: #f0f0f0;
-  color: #333;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.btn-success {
-  background: #27ae60;
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.btn-danger {
-  background: #e74c3c;
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  font-weight: 600;
-}
+.slip-content { padding: 1.5rem; }
+.slip-header-card { text-align: center; border-bottom: 2px dashed #e5e7eb; padding-bottom: 1rem; margin-bottom: 1rem; }
+.slip-header-card h3 { margin: 0; font-size: 1.3rem; color: #667eea; }
+.slip-header-card p { margin: 0.25rem 0 0; color: #6b7280; font-size: 0.9rem; }
+.slip-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f3f4f6; }
+.slip-label { font-size: 0.85rem; color: #6b7280; }
+.slip-value { font-weight: 500; color: #111; text-align: right; max-width: 60%; }
+.token-large { font-size: 1.3rem; font-weight: 700; color: #667eea; }
 </style>

@@ -11,6 +11,7 @@
             <li><router-link to="/receptionist/dashboard" class="nav-link">Dashboard</router-link></li>
             <li><router-link to="/receptionist/appointments" class="nav-link">Appointments</router-link></li>
             <li><router-link to="/receptionist/patients" class="nav-link">Patients</router-link></li>
+            <li><router-link to="/receptionist/visitors" class="nav-link">Visitors</router-link></li>
             <li><router-link to="/receptionist/billing" class="nav-link">Billing</router-link></li>
           </ul>
           <div class="navbar-right">

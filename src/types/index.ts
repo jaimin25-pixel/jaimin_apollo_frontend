@@ -241,3 +241,115 @@ export interface DoctorDetail {
   appointments: Appointment[]
   prescriptions: Prescription[]
 }
+
+// ── Receptionist Module Types ───────────────────────────────────────
+
+export interface Patient {
+  patient_id: number
+  pat_code: string
+  full_name: string
+  date_of_birth: string
+  gender: string
+  blood_group?: string
+  contact_number: string
+  address?: string
+  emergency_contact_name?: string
+  emergency_contact_phone?: string
+  insurance_id?: string
+  insurance_provider?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface AppointmentFull {
+  appt_id: number
+  patient_id: number
+  doctor_id: number
+  dept_id: number
+  scheduled_at: string
+  queue_token?: string
+  status: 'scheduled' | 'checked_in' | 'in_consultation' | 'completed' | 'cancelled'
+  chief_complaint?: string
+  created_by_staff_id?: number
+  created_at: string
+  updated_at: string
+  patient?: Patient
+  doctor?: Doctor
+  department?: Department
+}
+
+export interface VisitorLog {
+  visitor_id: number
+  patient_id: number
+  visitor_name: string
+  relation: string
+  time_in: string
+  time_out?: string
+  logged_by_staff_id: number
+  created_at: string
+  patient?: Patient
+  logged_by_staff?: Staff
+}
+
+export interface DeptQueueStat {
+  dept_id: number
+  dept_name: string
+  waiting: number
+}
+
+export interface ReceptionistDashboard {
+  total_today: number
+  checked_in_count: number
+  waiting_by_dept: DeptQueueStat[]
+}
+
+export interface AppointmentSlip {
+  appt_id: number
+  queue_token: string
+  scheduled_at: string
+  status: string
+  chief_complaint?: string
+  patient: {
+    patient_id: number
+    pat_code: string
+    full_name: string
+    contact_number: string
+    blood_group?: string
+  }
+  doctor: { full_name: string }
+  department: { name: string }
+}
+
+export interface RegisterPatientInput {
+  full_name: string
+  date_of_birth: string
+  gender: string
+  blood_group?: string
+  contact_number: string
+  address?: string
+  emergency_contact_name?: string
+  emergency_contact_phone?: string
+  insurance_id?: string
+  insurance_provider?: string
+}
+
+export interface BookAppointmentInput {
+  patient_id: number
+  doctor_id: number
+  dept_id: number
+  scheduled_at: string
+  chief_complaint?: string
+}
+
+export interface WalkInInput {
+  patient_id: number
+  doctor_id: number
+  dept_id: number
+  chief_complaint?: string
+}
+
+export interface LogVisitorInput {
+  patient_id: number
+  visitor_name: string
+  relation: string
+}
