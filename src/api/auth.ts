@@ -1,5 +1,5 @@
 import api from './axios'
-import type { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, User } from '@/types'
+import type { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, User, Doctor } from '@/types'
 
 export async function login(data: LoginRequest): Promise<LoginResponse> {
   const res = await api.post<LoginResponse>('/auth/login', data)
@@ -11,9 +11,9 @@ export async function register(data: RegisterRequest): Promise<RegisterResponse>
   return res.data
 }
 
-export async function getMe(): Promise<User> {
-  const res = await api.get<{ user: User }>('/auth/me')
-  return res.data.user
+export async function getMe(): Promise<{ user?: User; doctor?: Doctor }> {
+  const res = await api.get<{ user?: User; doctor?: Doctor }>('/auth/me')
+  return res.data
 }
 
 export async function logout(): Promise<void> {

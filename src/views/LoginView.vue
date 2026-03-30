@@ -191,7 +191,10 @@ async function handleLogin() {
   isLoading.value = true
   try {
     await authStore.login(email.value, password.value)
-    router.push({ name: 'admin-dashboard' })
+    
+    // Get the redirect route based on user's role
+    const redirectRoute = authStore.getLoginRedirectRoute()
+    router.push(redirectRoute)
   } catch (err: any) {
     errorMessage.value = err.message || 'Login failed. Please check your credentials and try again.'
   } finally {

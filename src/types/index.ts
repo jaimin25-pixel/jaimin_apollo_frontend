@@ -23,7 +23,8 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  user: User
+  user?: User
+  doctor?: Doctor
   tokens: TokenPair
 }
 
