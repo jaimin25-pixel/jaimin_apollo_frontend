@@ -105,13 +105,9 @@
             </div>
           </div>
 
-          <!-- Remember Me & Forgot Password -->
+          <!-- Forgot Password -->
           <div class="form-options">
-            <label class="checkbox-wrapper">
-              <input type="checkbox" v-model="rememberMe" />
-              <span class="checkmark"></span>
-              <span class="checkbox-label">Remember Me</span>
-            </label>
+            <div class="spacer"></div>
             <router-link to="/forgot-password" class="forgot-link">Forgot Password?</router-link>
           </div>
 
@@ -157,7 +153,6 @@ const authStore = useAuthStore()
 
 const email = ref('')
 const password = ref('')
-const rememberMe = ref(false)
 const showPassword = ref(false)
 const isLoading = ref(false)
 const errorMessage = ref('')
