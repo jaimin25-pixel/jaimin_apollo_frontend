@@ -353,3 +353,167 @@ export interface LogVisitorInput {
   visitor_name: string
   relation: string
 }
+
+// ── Patient Module Types ────────────────────────────────────────────
+
+export interface Ward {
+  ward_id: number
+  dept_id: number
+  name: string
+  ward_type: string
+  capacity: number
+  status: string
+  department?: Department
+}
+
+export interface Bed {
+  bed_id: number
+  ward_id: number
+  bed_number: string
+  bed_type: string
+  status: string
+  last_cleaned_at?: string
+  ward?: Ward
+}
+
+export interface AdmissionFull {
+  admission_id: number
+  patient_id: number
+  admitting_doctor_id: number
+  ward_id: number
+  bed_id: number
+  dept_id: number
+  admitted_at: string
+  diagnosis?: string
+  treatment_plan?: string
+  discharged_at?: string
+  status: string
+  created_at: string
+  patient?: Patient
+  admitting_doctor?: Doctor
+  ward?: Ward
+  bed?: Bed
+  department?: Department
+}
+
+export interface EHRData {
+  visits: AppointmentFull[]
+  diagnoses: ClinicalNote[]
+  prescriptions: PrescriptionFull[]
+  lab_results: LabResult[]
+  vitals: VitalRecord[]
+  clinical_notes: ClinicalNote[]
+}
+
+export interface ClinicalNote {
+  note_id: number
+  patient_id: number
+  doctor_id: number
+  appt_id?: number
+  admission_id?: number
+  notes: string
+  icd10_code?: string
+  created_at: string
+  updated_at: string
+  doctor?: Doctor
+}
+
+export interface PrescriptionFull {
+  rx_id: number
+  doctor_id: number
+  patient_id: number
+  appt_id?: number
+  admission_id?: number
+  diagnosis?: string
+  status: string
+  created_at: string
+  doctor?: Doctor
+  items?: PrescriptionItem[]
+}
+
+export interface PrescriptionItem {
+  item_id: number
+  rx_id: number
+  medicine_id: number
+  dosage: string
+  frequency: string
+  duration: string
+  quantity: number
+  status: string
+}
+
+export interface LabResult {
+  order_id: number
+  patient_id: number
+  doctor_id: number
+  test_id: number
+  ordered_at: string
+  sample_collected_at?: string
+  result_value?: string
+  is_abnormal?: boolean
+  result_uploaded_at?: string
+  status: string
+  notes?: string
+  doctor?: Doctor
+  test?: { test_id: number; test_name: string; dept_id: number }
+}
+
+export interface VitalRecord {
+  vital_id: number
+  patient_id: number
+  admission_id?: number
+  nurse_id?: number
+  recorded_by_role: string
+  recorded_at: string
+  temperature_c?: number
+  blood_pressure_systolic?: number
+  blood_pressure_diastolic?: number
+  pulse_bpm?: number
+  spo2_percent?: number
+  respiratory_rate?: number
+  blood_glucose_mgdl?: number
+  is_critical: boolean
+  notes?: string
+}
+
+export interface InvoiceFull {
+  invoice_id: number
+  patient_id: number
+  admission_id?: number
+  appt_id?: number
+  consultation_charges: number
+  procedure_charges: number
+  lab_charges: number
+  pharmacy_charges: number
+  bed_charges: number
+  miscellaneous_charges: number
+  sub_total: number
+  tax_amount: number
+  total_amount: number
+  amount_paid: number
+  balance_due: number
+  payment_mode?: string
+  insurance_claim_id?: number
+  status: string
+  created_by?: number
+  created_at: string
+  finalized_at?: string
+  patient?: Patient
+  admission?: AdmissionFull
+  appointment?: AppointmentFull
+}
+
+export interface UpdatePatientInput {
+  contact_number?: string
+  address?: string
+  emergency_contact_name?: string
+  emergency_contact_phone?: string
+  insurance_id?: string
+}
+
+export interface PatientBookAppointmentInput {
+  doctor_id: number
+  dept_id: number
+  scheduled_at: string
+  chief_complaint?: string
+}

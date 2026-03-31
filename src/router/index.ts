@@ -220,6 +220,44 @@ const router = createRouter({
         },
       ],
     },
+    // Patient Module
+    {
+      path: '/patient',
+      component: () => import('@/views/patient/PatientLayout.vue'),
+      meta: { requiresAuth: true, requiresPatientModule: true },
+      children: [
+        {
+          path: '',
+          name: 'patient-dashboard',
+          component: () => import('@/views/patient/PatientDashboardView.vue'),
+        },
+        {
+          path: 'list',
+          name: 'patient-list',
+          component: () => import('@/views/patient/PatientListView.vue'),
+        },
+        {
+          path: 'appointments',
+          name: 'patient-appointments',
+          component: () => import('@/views/patient/PatientAppointmentsView.vue'),
+        },
+        {
+          path: 'admissions',
+          name: 'patient-admissions',
+          component: () => import('@/views/patient/PatientAdmissionsView.vue'),
+        },
+        {
+          path: 'ehr',
+          name: 'patient-ehr',
+          component: () => import('@/views/patient/PatientEHRView.vue'),
+        },
+        {
+          path: 'billing',
+          name: 'patient-billing',
+          component: () => import('@/views/patient/PatientBillingView.vue'),
+        },
+      ],
+    },
   ],
 })
 
@@ -244,6 +282,7 @@ router.beforeEach((to, _from, next) => {
           case 'pharmacist': return next({ name: 'pharmacist' })
           case 'nurse': return next({ name: 'nurse' })
           case 'staff': return next({ name: 'staff' })
+          case 'patient': return next({ name: 'patient-dashboard' })
           default: return next({ name: 'login' })
         }
       }
@@ -300,6 +339,22 @@ router.beforeEach((to, _from, next) => {
       if (stored) {
         const user = JSON.parse(stored)
         if (user.role?.toLowerCase() !== 'pharmacist') {
+          next({ name: 'access-denied' })
+          return
+        }
+      }
+    } catch {
+      // ignore parse errors
+    }
+    next()
+  } else if (to.meta.requiresPatientModule && isAuthenticated) {
+    try {
+      const stored = localStorage.getItem('apollo_user')
+      if (stored) {
+        const user = JSON.parse(stored)
+        const role = user.role?.toLowerCase()
+        const allowed = ['receptionist', 'reception', 'doctor', 'nurse', 'admin', 'patient']
+        if (!allowed.includes(role)) {
           next({ name: 'access-denied' })
           return
         }

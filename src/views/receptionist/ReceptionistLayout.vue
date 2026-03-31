@@ -1,161 +1,283 @@
 <template>
   <div class="receptionist-layout">
-    <!-- Top Navigation -->
-    <nav class="navbar">
-      <div class="navbar-container">
-        <div class="navbar-brand">
-          <h2>Apollo HMS - Reception Portal</h2>
-        </div>
-        <div class="navbar-menu">
-          <ul class="nav-links">
-            <li><router-link to="/receptionist/dashboard" class="nav-link">Dashboard</router-link></li>
-            <li><router-link to="/receptionist/appointments" class="nav-link">Appointments</router-link></li>
-            <li><router-link to="/receptionist/patients" class="nav-link">Patients</router-link></li>
-            <li><router-link to="/receptionist/visitors" class="nav-link">Visitors</router-link></li>
-            <li><router-link to="/receptionist/billing" class="nav-link">Billing</router-link></li>
-          </ul>
-          <div class="navbar-right">
-            <span class="user-info">{{ authStore.user?.full_name || 'Reception' }}</span>
-            <button @click="handleLogout" class="logout-btn">Logout</button>
+    <aside class="sidebar" :class="{ collapsed: sidebarCollapsed }">
+      <div class="sidebar-header">
+        <img :src="logoSvg" alt="Apollo" class="sidebar-logo" />
+        <span v-if="!sidebarCollapsed" class="sidebar-title">Apollo Reception</span>
+        <button class="collapse-btn" @click="sidebarCollapsed = !sidebarCollapsed">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path v-if="sidebarCollapsed" d="M6 4.5L11.25 9 6 13.5" />
+            <path v-else d="M11.25 4.5L6 9 11.25 13.5" />
+          </svg>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <router-link
+          v-for="item in navItems"
+          :key="item.path"
+          :to="item.path"
+          class="nav-item"
+          :class="{ active: $route.path === item.path }"
+        >
+          <span class="nav-icon" v-html="item.icon"></span>
+          <span v-if="!sidebarCollapsed" class="nav-label">{{ item.label }}</span>
+        </router-link>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="nav-item logout-btn" @click="handleLogout">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6.75 15.75H3.75a1.5 1.5 0 01-1.5-1.5V3.75a1.5 1.5 0 011.5-1.5h3" />
+              <path d="M12 12.75L15.75 9 12 5.25" />
+              <path d="M15.75 9H6.75" />
+            </svg>
+          </span>
+          <span v-if="!sidebarCollapsed" class="nav-label">Logout</span>
+        </button>
+      </div>
+    </aside>
+
+    <div class="main-area">
+      <header class="top-bar">
+        <h2 class="page-title">{{ pageTitle }}</h2>
+        <div class="top-bar-right">
+          <div class="user-badge">
+            <div class="user-avatar">{{ userInitials }}</div>
+            <span class="user-name">{{ authStore.user?.full_name }}</span>
           </div>
         </div>
-      </div>
-    </nav>
+      </header>
 
-    <!-- Main Content -->
-    <div class="receptionist-container">
-      <router-view />
+      <main class="page-content">
+        <router-view />
+      </main>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { ref, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import logoSvg from '@/assets/images/logo.svg'
 
-const router = useRouter()
 const authStore = useAuthStore()
+const route = useRoute()
+const router = useRouter()
+const sidebarCollapsed = ref(false)
 
-const handleLogout = async () => {
-  await authStore.logout()
-  router.push('/login')
+const userInitials = computed(() => {
+  const name = authStore.user?.full_name || ''
+  if (!name) return 'RC'
+  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+})
+
+const pageTitle = computed(() => {
+  const titles: Record<string, string> = {
+    '/receptionist/dashboard': 'Dashboard',
+    '/receptionist/appointments': 'Appointments',
+    '/receptionist/patients': 'Patients',
+    '/receptionist/visitors': 'Visitors',
+    '/receptionist/billing': 'Billing & Payments',
+  }
+  return titles[route.path] || 'Reception Portal'
+})
+
+const navItems = [
+  {
+    path: '/receptionist/dashboard',
+    label: 'Dashboard',
+    icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.25" y="2.25" width="5.25" height="5.25" rx="1" /><rect x="10.5" y="2.25" width="5.25" height="5.25" rx="1" /><rect x="2.25" y="10.5" width="5.25" height="5.25" rx="1" /><rect x="10.5" y="10.5" width="5.25" height="5.25" rx="1" /></svg>',
+  },
+  {
+    path: '/receptionist/appointments',
+    label: 'Appointments',
+    icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="3.5" width="13" height="12" rx="1.5"/><path d="M12 2v3M6 2v3M2.5 7.5h13"/></svg>',
+  },
+  {
+    path: '/receptionist/patients',
+    label: 'Patients',
+    icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.75 15.75v-1.5a3 3 0 00-3-3h-4.5a3 3 0 00-3 3v1.5" /><circle cx="8" cy="5.25" r="3" /><path d="M15.75 15.75v-1.5a3 3 0 00-2.25-2.9" /><path d="M12 2.33a3 3 0 010 5.84" /></svg>',
+  },
+  {
+    path: '/receptionist/visitors',
+    label: 'Visitors',
+    icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5.5a3 3 0 116 0A3 3 0 016 5.5zM2 15.5a8.5 8.5 0 0114 0" /></svg>',
+  },
+  {
+    path: '/receptionist/billing',
+    label: 'Billing',
+    icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4.5" width="13" height="9" rx="1.5" /><path d="M2.5 7.5h13M6.5 10.5h2" /></svg>',
+  },
+]
+
+function handleLogout() {
+  authStore.logout()
+  router.push({ name: 'login' })
 }
 </script>
 
 <style scoped>
 .receptionist-layout {
+  display: flex;
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background: var(--bg-light);
 }
 
-.navbar {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  position: sticky;
+.sidebar {
+  width: 260px;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.2s ease;
+  position: fixed;
   top: 0;
+  left: 0;
+  bottom: 0;
   z-index: 100;
 }
 
-.navbar-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
+.sidebar.collapsed {
+  width: 64px;
 }
 
-.navbar-brand h2 {
-  color: white;
-  margin: 0;
-  font-size: 1.8rem;
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.sidebar-logo {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  filter: brightness(0) invert(1);
+}
+
+.sidebar-title {
+  font-size: 16px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
-.navbar-menu {
+.collapse-btn {
+  margin-left: auto;
+  background: rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 4px;
+  color: #fff;
   display: flex;
-  gap: 2rem;
   align-items: center;
+  cursor: pointer;
+  border: none;
 }
+.collapse-btn:hover { background: rgba(255,255,255,0.2); }
 
-.nav-links {
+.sidebar-nav {
+  flex: 1;
+  padding: 12px 8px;
   display: flex;
-  gap: 2rem;
-  list-style: none;
-  margin: 0;
-  padding: 0;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
 }
 
-.nav-link {
-  color: white;
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: rgba(255,255,255,0.7);
+  font-size: 14px;
+  transition: all 0.15s;
   text-decoration: none;
-  font-weight: 500;
-  transition: opacity 0.3s ease;
-  font-size: 0.95rem;
 }
+.nav-item:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.nav-item.active { background: rgba(255,255,255,0.15); color: #fff; font-weight: 500; }
 
-.nav-link:hover {
-  opacity: 0.8;
-}
+.nav-icon { display: flex; align-items: center; flex-shrink: 0; }
+.nav-label { white-space: nowrap; }
 
-.nav-link.router-link-active {
-  border-bottom: 2px solid white;
-  padding-bottom: 0.5rem;
-}
-
-.navbar-right {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.user-info {
-  color: white;
-  font-size: 0.95rem;
-  font-weight: 500;
+.sidebar-footer {
+  padding: 8px;
+  border-top: 1px solid rgba(255,255,255,0.1);
 }
 
 .logout-btn {
-  background-color: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 1px solid white;
-  padding: 0.5rem 1.5rem;
-  border-radius: 4px;
+  background: none;
+  border: none;
   cursor: pointer;
-  font-weight: 500;
-  transition: all 0.3s ease;
+  color: rgba(255,255,255,0.7);
+  width: 100%;
 }
 
-.logout-btn:hover {
-  background-color: white;
-  color: #667eea;
+.main-area {
+  flex: 1;
+  margin-left: 260px;
+  transition: margin-left 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
-.receptionist-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 2rem;
+.sidebar.collapsed + .main-area { margin-left: 64px; }
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.top-bar-right { display: flex; align-items: center; gap: 16px; }
+
+.user-badge { display: flex; align-items: center; gap: 10px; }
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.user-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+
+.page-content {
+  flex: 1;
+  padding: 24px 32px;
+  overflow-y: auto;
 }
 
 @media (max-width: 768px) {
-  .navbar-container {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .nav-links {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .receptionist-container {
-    padding: 1rem;
-  }
-
-  .navbar-right {
-    width: 100%;
-    justify-content: space-between;
-  }
+  .sidebar { width: 64px; }
+  .sidebar .sidebar-title,
+  .sidebar .nav-label { display: none; }
+  .main-area { margin-left: 64px; }
+  .page-content { padding: 16px; }
+  .top-bar { padding: 12px 16px; }
 }
 </style>

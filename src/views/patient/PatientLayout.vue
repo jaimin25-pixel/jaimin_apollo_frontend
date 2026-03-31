@@ -1,9 +1,9 @@
 <template>
-  <div class="doctor-layout">
+  <div class="patient-layout">
     <aside class="sidebar" :class="{ collapsed: sidebarCollapsed }">
       <div class="sidebar-header">
         <img :src="logoSvg" alt="Apollo" class="sidebar-logo" />
-        <span v-if="!sidebarCollapsed" class="sidebar-title">Apollo Doctor</span>
+        <span v-if="!sidebarCollapsed" class="sidebar-title">Apollo Patient</span>
         <button class="collapse-btn" @click="sidebarCollapsed = !sidebarCollapsed">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <path v-if="sidebarCollapsed" d="M6 4.5L11.25 9 6 13.5" />
@@ -70,58 +70,52 @@ const sidebarCollapsed = ref(false)
 
 const userInitials = computed(() => {
   const name = authStore.user?.full_name || ''
-  if (!name) return 'DR'
+  if (!name) return 'PT'
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 })
 
 const pageTitle = computed(() => {
   const titles: Record<string, string> = {
-    '/doctor': 'Dashboard',
-    '/doctor/appointments': 'Appointments',
-    '/doctor/patients': 'Patients',
-    '/doctor/prescriptions': 'Prescriptions',
-    '/doctor/lab-orders': 'Lab Orders',
-    '/doctor/radiology-orders': 'Radiology Orders',
-    '/doctor/profile': 'My Profile',
+    '/patient': 'Dashboard',
+    '/patient/list': 'Patients',
+    '/patient/appointments': 'Appointments',
+    '/patient/admissions': 'Admissions',
+    '/patient/ehr': 'Electronic Health Records',
+    '/patient/billing': 'Billing & Payments',
   }
-  return titles[route.path] || 'Doctor Portal'
+  return titles[route.path] || 'Patient Portal'
 })
 
 const navItems = [
   {
-    path: '/doctor',
+    path: '/patient',
     label: 'Dashboard',
     icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.25" y="2.25" width="5.25" height="5.25" rx="1" /><rect x="10.5" y="2.25" width="5.25" height="5.25" rx="1" /><rect x="2.25" y="10.5" width="5.25" height="5.25" rx="1" /><rect x="10.5" y="10.5" width="5.25" height="5.25" rx="1" /></svg>',
   },
   {
-    path: '/doctor/appointments',
-    label: 'Appointments',
-    icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="3.5" width="13" height="12" rx="1.5"/><path d="M12 2v3M6 2v3M2.5 7.5h13"/></svg>',
-  },
-  {
-    path: '/doctor/patients',
+    path: '/patient/list',
     label: 'Patients',
     icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.75 15.75v-1.5a3 3 0 00-3-3h-4.5a3 3 0 00-3 3v1.5" /><circle cx="8" cy="5.25" r="3" /><path d="M15.75 15.75v-1.5a3 3 0 00-2.25-2.9" /><path d="M12 2.33a3 3 0 010 5.84" /></svg>',
   },
   {
-    path: '/doctor/prescriptions',
-    label: 'Prescriptions',
-    icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 12.5l7-7M2.5 7.5a3.536 3.536 0 015-5l3 3a3.536 3.536 0 01-5 5l-3-3z"/><path d="M10.5 15.5a3.536 3.536 0 01-5-5l3-3a3.536 3.536 0 015 5l-3 3z"/></svg>',
+    path: '/patient/appointments',
+    label: 'Appointments',
+    icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="3.5" width="13" height="12" rx="1.5"/><path d="M12 2v3M6 2v3M2.5 7.5h13"/></svg>',
   },
   {
-    path: '/doctor/lab-orders',
-    label: 'Lab Orders',
-    icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 14h7M5.5 14L8.5 5M12.5 14l-3-9M8.5 5V2M9.5 5V2M7 2h4"/></svg>',
+    path: '/patient/admissions',
+    label: 'Admissions',
+    icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15.5h12M4.5 9v6.5M13.5 9v6.5M4.5 3h9M4.5 3L2 9M13.5 3L16 9" /></svg>',
   },
   {
-    path: '/doctor/radiology-orders',
-    label: 'Radiology',
-    icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="6"/><circle cx="9" cy="9" r="2.5"/><path d="M9 6.5V2M9 16v-4.5M6.5 9H2M16 9h-4.5"/></svg>',
+    path: '/patient/ehr',
+    label: 'EHR',
+    icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2h-11a1 1 0 00-1 1v12a1 1 0 001 1h11a1 1 0 001-1V3a1 1 0 00-1-1zM5.5 5.5h7M5.5 8.5h7M5.5 11.5h4" /></svg>',
   },
   {
-    path: '/doctor/profile',
-    label: 'My Profile',
-    icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 8.5a3 3 0 100-6 3 3 0 000 6z"/><path d="M3 15.5a6 6 0 0112 0"/></svg>',
+    path: '/patient/billing',
+    label: 'Billing',
+    icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4.5" width="13" height="9" rx="1.5" /><path d="M2.5 7.5h13M6.5 10.5h2" /></svg>',
   },
 ]
 
@@ -132,7 +126,7 @@ function handleLogout() {
 </script>
 
 <style scoped>
-.doctor-layout {
+.patient-layout {
   display: flex;
   min-height: 100vh;
   background: var(--bg-light);

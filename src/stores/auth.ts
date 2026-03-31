@@ -131,6 +131,8 @@ export const useAuthStore = defineStore('auth', () => {
         return '/nurse'
       case 'staff':
         return '/staff'
+      case 'patient':
+        return '/patient'
       default:
         logout()
         return '/login'
