@@ -128,9 +128,17 @@ export const useAuthStore = defineStore('auth', () => {
       case 'pharmacist':
         return '/pharmacist'
       case 'nurse':
-        return '/nurse'
+        return '/nursing'
+      case 'hr_manager':
       case 'staff':
-        return '/staff'
+        return '/hr'
+      case 'billing_staff':
+        return '/finance'
+      case 'lab_technician':
+      case 'radiologist':
+        return '/lab'
+      case 'ot_technician':
+        return '/ot'
       case 'patient':
         return '/patient'
       default:

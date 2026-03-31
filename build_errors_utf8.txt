@@ -1,0 +1,85 @@
+﻿
+> apollo-hospital-frontend@1.0.0 build
+> vue-tsc && vite build
+
+src/views/nursing/NursingPatientsView.vue(35,1): error TS6133: 'useNursingStore' is declared but its value is never read.
+src/views/pharmacy/modals/BatchModal.vue(20,30): error TS2339: Property 'batch_number' does not exist on type '{}'.
+src/views/pharmacy/modals/BatchModal.vue(20,73): error TS2339: Property 'batch_number' does not exist on type '{}'.
+src/views/pharmacy/modals/BatchModal.vue(36,32): error TS2339: Property 'quantity' does not exist on type '{}'.
+src/views/pharmacy/modals/BatchModal.vue(36,71): error TS2339: Property 'quantity' does not exist on type '{}'.
+src/views/pharmacy/modals/BatchModal.vue(42,32): error TS2339: Property 'purchase_date' does not exist on type '{}'.
+src/views/pharmacy/modals/BatchModal.vue(42,76): error TS2339: Property 'purchase_date' does not exist on type '{}'.
+src/views/pharmacy/modals/BatchModal.vue(50,32): error TS2339: Property 'expiry_date' does not exist on type '{}'.
+src/views/pharmacy/modals/BatchModal.vue(50,74): error TS2339: Property 'expiry_date' does not exist on type '{}'.
+src/views/pharmacy/modals/BatchModal.vue(112,18): error TS2339: Property 'batch_number' does not exist on type '{}'.
+src/views/pharmacy/modals/BatchModal.vue(115,18): error TS2339: Property 'quantity' does not exist on type '{}'.
+src/views/pharmacy/modals/BatchModal.vue(118,18): error TS2339: Property 'purchase_date' does not exist on type '{}'.
+src/views/pharmacy/modals/BatchModal.vue(121,18): error TS2339: Property 'expiry_date' does not exist on type '{}'.
+src/views/pharmacy/modals/BatchModal.vue(128,18): error TS2339: Property 'expiry_date' does not exist on type '{}'.
+src/views/pharmacy/modals/DispenseModal.vue(14,58): error TS2339: Property 'rx_id' does not exist on type 'never'.
+src/views/pharmacy/modals/DispenseModal.vue(14,76): error TS2339: Property 'rx_id' does not exist on type 'never'.
+src/views/pharmacy/modals/DispenseModal.vue(15,25): error TS2339: Property 'rx_id' does not exist on type 'never'.
+src/views/pharmacy/modals/DispenseModal.vue(15,42): error TS2339: Property 'patient' does not exist on type 'never'.
+src/views/pharmacy/modals/DispenseModal.vue(25,45): error TS2339: Property 'rx_id' does not exist on type 'never'.
+src/views/pharmacy/modals/DispenseModal.vue(26,49): error TS2339: Property 'patient' does not exist on type 'never'.
+src/views/pharmacy/modals/DispenseModal.vue(27,48): error TS2339: Property 'doctor' does not exist on type 'never'.
+src/views/pharmacy/modals/DispenseModal.vue(28,69): error TS2339: Property 'status' does not exist on type 'never'.
+src/views/pharmacy/modals/DispenseModal.vue(28,102): error TS2339: Property 'status' does not exist on type 'never'.
+src/views/pharmacy/modals/DispenseModal.vue(33,54): error TS2339: Property 'items' does not exist on type 'never'.
+src/views/pharmacy/modals/DispenseModal.vue(50,37): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{}'.
+src/views/pharmacy/modals/DispenseModal.vue(62,30): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{}'.
+src/views/pharmacy/modals/DispenseModal.vue(67,45): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{}'.
+src/views/pharmacy/modals/DispenseModal.vue(73,28): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{}'.
+src/views/pharmacy/modals/DispenseModal.vue(74,32): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{}'.
+src/views/pharmacy/modals/DispenseModal.vue(75,36): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{}'.
+src/views/pharmacy/modals/DispenseModal.vue(115,50): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
+src/views/pharmacy/modals/DispenseModal.vue(122,9): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{}'.
+src/views/pharmacy/modals/DispenseModal.vue(139,5): error TS7053: Element implicitly has an 'any' type because expression of type 'number' can't be used to index type '{}'.
+  No index signature with a parameter of type 'number' was found on type '{}'.
+src/views/pharmacy/modals/DispenseModal.vue(146,19): error TS7053: Element implicitly has an 'any' type because expression of type 'number' can't be used to index type '{}'.
+  No index signature with a parameter of type 'number' was found on type '{}'.
+src/views/pharmacy/modals/DispenseModal.vue(152,5): error TS7053: Element implicitly has an 'any' type because expression of type 'number' can't be used to index type '{}'.
+  No index signature with a parameter of type 'number' was found on type '{}'.
+src/views/pharmacy/modals/DispenseModal.vue(152,53): error TS2339: Property 'batch_number' does not exist on type '{}'.
+src/views/pharmacy/modals/DispenseModal.vue(153,5): error TS7053: Element implicitly has an 'any' type because expression of type 'number' can't be used to index type '{}'.
+  No index signature with a parameter of type 'number' was found on type '{}'.
+src/views/pharmacy/modals/DispenseModal.vue(153,50): error TS2339: Property 'quantity_remaining' does not exist on type '{}'.
+src/views/pharmacy/modals/DispenseModal.vue(159,15): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{}'.
+src/views/pharmacy/modals/DispenseModal.vue(162,5): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{}'.
+src/views/pharmacy/modals/DispenseModal.vue(169,37): error TS2339: Property 'items' does not exist on type 'never'.
+src/views/pharmacy/modals/DispenseModal.vue(171,18): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{}'.
+src/views/pharmacy/modals/DispenseModal.vue(178,19): error TS18047: 'selectedPrescription.value' is possibly 'null'.
+src/views/pharmacy/modals/DispenseModal.vue(179,67): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{}'.
+src/views/pharmacy/modals/DispenseModal.vue(182,29): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{}'.
+src/views/pharmacy/modals/DispenseModal.vue(183,19): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{}'.
+src/views/pharmacy/modals/DispenseModal.vue(191,44): error TS18047: 'selectedPrescription.value' is possibly 'null'.
+src/views/pharmacy/modals/MedicineModal.vue(20,30): error TS2339: Property 'generic_name' does not exist on type '{}'.
+src/views/pharmacy/modals/MedicineModal.vue(20,73): error TS2339: Property 'generic_name' does not exist on type '{}'.
+src/views/pharmacy/modals/MedicineModal.vue(45,32): error TS2339: Property 'category' does not exist on type '{}'.
+src/views/pharmacy/modals/MedicineModal.vue(45,71): error TS2339: Property 'category' does not exist on type '{}'.
+src/views/pharmacy/modals/MedicineModal.vue(67,32): error TS2339: Property 'unit' does not exist on type '{}'.
+src/views/pharmacy/modals/MedicineModal.vue(67,67): error TS2339: Property 'unit' does not exist on type '{}'.
+src/views/pharmacy/modals/MedicineModal.vue(88,32): error TS2339: Property 'reorder_level' does not exist on type '{}'.
+src/views/pharmacy/modals/MedicineModal.vue(88,76): error TS2339: Property 'reorder_level' does not exist on type '{}'.
+src/views/pharmacy/modals/MedicineModal.vue(178,18): error TS2339: Property 'generic_name' does not exist on type '{}'.
+src/views/pharmacy/modals/MedicineModal.vue(181,18): error TS2339: Property 'category' does not exist on type '{}'.
+src/views/pharmacy/modals/MedicineModal.vue(184,18): error TS2339: Property 'unit' does not exist on type '{}'.
+src/views/pharmacy/modals/MedicineModal.vue(187,18): error TS2339: Property 'reorder_level' does not exist on type '{}'.
+src/views/pharmacy/PartnerPharmaciesPage.vue(42,57): error TS2339: Property 'partner_id' does not exist on type 'never'.
+src/views/pharmacy/PartnerPharmaciesPage.vue(43,28): error TS2339: Property 'name' does not exist on type 'never'.
+src/views/pharmacy/PartnerPharmaciesPage.vue(44,28): error TS2339: Property 'license_number' does not exist on type 'never'.
+src/views/pharmacy/PartnerPharmaciesPage.vue(45,28): error TS2339: Property 'address' does not exist on type 'never'.
+src/views/pharmacy/PartnerPharmaciesPage.vue(46,28): error TS2339: Property 'contact_phone' does not exist on type 'never'.
+src/views/pharmacy/PartnerPharmaciesPage.vue(47,28): error TS2339: Property 'contact_email' does not exist on type 'never'.
+src/views/pharmacy/PartnerPharmaciesPage.vue(49,47): error TS2339: Property 'status' does not exist on type 'never'.
+src/views/pharmacy/PartnerPharmaciesPage.vue(49,67): error TS2339: Property 'status' does not exist on type 'never'.
+src/views/pharmacy/PartnerPharmaciesPage.vue(81,60): error TS2339: Property 'transfer_id' does not exist on type 'never'.
+src/views/pharmacy/PartnerPharmaciesPage.vue(82,29): error TS2339: Property 'medicine' does not exist on type 'never'.
+src/views/pharmacy/PartnerPharmaciesPage.vue(83,29): error TS2339: Property 'partner' does not exist on type 'never'.
+src/views/pharmacy/PartnerPharmaciesPage.vue(84,29): error TS2339: Property 'quantity' does not exist on type 'never'.
+src/views/pharmacy/PartnerPharmaciesPage.vue(86,48): error TS2339: Property 'status' does not exist on type 'never'.
+src/views/pharmacy/PartnerPharmaciesPage.vue(86,69): error TS2339: Property 'status' does not exist on type 'never'.
+src/views/pharmacy/PartnerPharmaciesPage.vue(88,40): error TS2339: Property 'created_at' does not exist on type 'never'.
+src/views/pharmacy/PartnerPharmaciesPage.vue(90,38): error TS2339: Property 'status' does not exist on type 'never'.
+src/views/pharmacy/PartnerPharmaciesPage.vue(90,90): error TS2339: Property 'transfer_id' does not exist on type 'never'.
+src/views/ResetPasswordView.vue(242,9): error TS6133: 'error' is declared but its value is never read.

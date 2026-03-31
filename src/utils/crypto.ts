@@ -1,3 +1,5 @@
+import api from '@/api/axios'
+
 // AES-256-GCM encryption using Web Crypto API
 let cachedKey: CryptoKey | null = null
 let rawKey: string = ''
@@ -6,9 +8,8 @@ async function getEncryptionKey(): Promise<CryptoKey> {
   if (cachedKey && rawKey) return cachedKey
 
   // Fetch key from backend
-  const res = await fetch('/api/auth/encryption-key')
-  const data = await res.json()
-  rawKey = data.key
+  const res = await api.get('/auth/encryption-key')
+  rawKey = res.data.key
 
   const keyBuffer = new TextEncoder().encode(rawKey)
   cachedKey = await crypto.subtle.importKey(

@@ -122,6 +122,11 @@ const navItems = [
     label: 'Reports',
     icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 15.75H4.5a1.5 1.5 0 01-1.5-1.5V3.75a1.5 1.5 0 011.5-1.5h5.69a1.5 1.5 0 011.06.44l3.56 3.56a1.5 1.5 0 01.44 1.06v6.94a1.5 1.5 0 01-1.5 1.5z" /><path d="M10.5 2.25v4.5h4.5" /><path d="M6.75 9.75h4.5M6.75 12.75h4.5" /></svg>',
   },
+  {
+    path: '/admin/profile',
+    label: 'My Profile',
+    icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 8.5a3 3 0 100-6 3 3 0 000 6z"/><path d="M3 15.5a6 6 0 0112 0"/></svg>',
+  },
 ]
 
 function handleLogout() {

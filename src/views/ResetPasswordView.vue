@@ -239,7 +239,7 @@ function checkRequirements() {
   requirements.number = /\d/.test(pw)
   requirements.special = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pw)
   // Also run shared validator for consistency
-  const error = validators.password(pw)
+  validators.password(pw)
   // error is used implicitly via requirements checks
 }
 

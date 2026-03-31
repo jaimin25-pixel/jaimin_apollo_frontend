@@ -99,6 +99,11 @@ const navItems = [
     label: 'Partners',
     icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.75 15.75v-1.5a3 3 0 00-3-3h-4.5a3 3 0 00-3 3v1.5" /><circle cx="8" cy="5.25" r="3" /><path d="M15.75 15.75v-1.5a3 3 0 00-2.25-2.9" /><path d="M12 2.33a3 3 0 010 5.84" /></svg>',
   },
+  {
+    path: '/pharmacist/profile',
+    label: 'My Profile',
+    icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 8.5a3 3 0 100-6 3 3 0 000 6z"/><path d="M3 15.5a6 6 0 0112 0"/></svg>',
+  },
 ]
 
 function handleLogout() {

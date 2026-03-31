@@ -17,8 +17,14 @@ const router = createRouter({
               case 'receptionist':
               case 'reception': return '/receptionist'
               case 'pharmacist': return '/pharmacist'
-              case 'nurse': return '/nurse'
-              case 'staff': return '/staff'
+              case 'nurse': return '/nursing'
+              case 'hr_manager':
+              case 'staff': return '/hr'
+              case 'billing_staff': return '/finance'
+              case 'lab_technician':
+              case 'radiologist': return '/lab'
+              case 'ot_technician': return '/ot'
+              case 'patient': return '/patient'
               default: return '/login'
             }
           }
@@ -99,6 +105,11 @@ const router = createRouter({
           name: 'admin-reports',
           component: () => import('@/views/admin/AdminReportsView.vue'),
         },
+        {
+          path: 'profile',
+          name: 'admin-profile',
+          component: () => import('@/views/shared/SharedProfileView.vue'),
+        },
       ],
     },
     // Doctor Module
@@ -115,7 +126,7 @@ const router = createRouter({
         {
           path: 'profile',
           name: 'doctor-profile',
-          component: () => import('@/views/doctor/DoctorProfileView.vue'),
+          component: () => import('@/views/shared/SharedProfileView.vue'),
         },
         {
           path: 'appointments',
@@ -190,6 +201,11 @@ const router = createRouter({
           name: 'receptionist-billing',
           component: () => import('@/views/receptionist/ReceptionistBillingView.vue'),
         },
+        {
+          path: 'profile',
+          name: 'receptionist-profile',
+          component: () => import('@/views/shared/SharedProfileView.vue'),
+        },
       ],
     },
     // Pharmacist Module
@@ -218,6 +234,92 @@ const router = createRouter({
           name: 'pharmacist-partners',
           component: () => import('@/views/pharmacy/PartnerPharmaciesPage.vue'),
         },
+        {
+          path: 'profile',
+          name: 'pharmacist-profile',
+          component: () => import('@/views/shared/SharedProfileView.vue'),
+        },
+      ],
+    },
+    // Nursing Module
+    {
+      path: '/nursing',
+      component: () => import('@/views/nursing/NursingLayout.vue'),
+      meta: { requiresAuth: true, requiresNurse: true },
+      children: [
+        {
+          path: '',
+          redirect: '/nursing/dashboard'
+        },
+        {
+          path: 'dashboard',
+          name: 'nursing-dashboard',
+          component: () => import('@/views/nursing/NursingDashboardView.vue'),
+        },
+        {
+          path: 'wards',
+          name: 'nursing-wards',
+          component: () => import('@/views/nursing/NursingWardsView.vue'),
+        },
+        {
+          path: 'patients',
+          name: 'nursing-patients',
+          component: () => import('@/views/nursing/NursingPatientsView.vue'),
+        },
+        {
+          path: 'profile',
+          name: 'nursing-profile',
+          component: () => import('@/views/shared/SharedProfileView.vue'),
+        },
+      ],
+    },
+    // Lab & Radiology Module
+    {
+      path: '/lab',
+      component: () => import('@/views/lab/LabLayout.vue'),
+      meta: { requiresAuth: true, requiresLabModule: true },
+      children: [
+        { path: '', redirect: '/lab/dashboard' },
+        { path: 'dashboard', name: 'lab-dashboard', component: () => import('@/views/lab/LabDashboardView.vue') },
+        { path: 'orders', name: 'lab-orders', component: () => import('@/views/lab/LabOrdersView.vue') },
+        { path: 'radiology', name: 'lab-radiology-orders', component: () => import('@/views/lab/RadiologyOrdersView.vue') },
+        { path: 'profile', name: 'lab-profile', component: () => import('@/views/shared/SharedProfileView.vue') },
+      ],
+    },
+    // Operation Theatre Module
+    {
+      path: '/ot',
+      component: () => import('@/views/ot/OTLayout.vue'),
+      meta: { requiresAuth: true, requiresOTModule: true },
+      children: [
+        { path: '', redirect: '/ot/dashboard' },
+        { path: 'dashboard', name: 'ot-dashboard', component: () => import('@/views/ot/OTDashboardView.vue') },
+        { path: 'schedules', name: 'ot-schedules', component: () => import('@/views/ot/OTSchedulesView.vue') },
+        { path: 'profile', name: 'ot-profile', component: () => import('@/views/shared/SharedProfileView.vue') },
+      ],
+    },
+    // HR & Staff Module
+    {
+      path: '/hr',
+      component: () => import('@/views/hr/HRLayout.vue'),
+      meta: { requiresAuth: true, requiresHRModule: true },
+      children: [
+        { path: '', redirect: '/hr/dashboard' },
+        { path: 'dashboard', name: 'hr-dashboard', component: () => import('@/views/hr/HRDashboardView.vue') },
+        { path: 'staff', name: 'hr-staff', component: () => import('@/views/hr/HRStaffView.vue') },
+        { path: 'profile', name: 'hr-profile', component: () => import('@/views/shared/SharedProfileView.vue') },
+      ],
+    },
+    // Finance & Insurance Module
+    {
+      path: '/finance',
+      component: () => import('@/views/finance/FinanceLayout.vue'),
+      meta: { requiresAuth: true, requiresFinanceModule: true },
+      children: [
+        { path: '', redirect: '/finance/dashboard' },
+        { path: 'dashboard', name: 'finance-dashboard', component: () => import('@/views/finance/FinanceDashboardView.vue') },
+        { path: 'invoices', name: 'finance-invoices', component: () => import('@/views/finance/FinanceInvoicesView.vue') },
+        { path: 'profile', name: 'finance-profile', component: () => import('@/views/shared/SharedProfileView.vue') },
       ],
     },
     // Patient Module
@@ -256,6 +358,11 @@ const router = createRouter({
           name: 'patient-billing',
           component: () => import('@/views/patient/PatientBillingView.vue'),
         },
+        {
+          path: 'profile',
+          name: 'patient-profile',
+          component: () => import('@/views/shared/SharedProfileView.vue'),
+        },
       ],
     },
   ],
@@ -279,9 +386,14 @@ router.beforeEach((to, _from, next) => {
           case 'doctor': return next({ name: 'doctor-dashboard' })
           case 'receptionist':
           case 'reception': return next({ name: 'receptionist-dashboard' })
-          case 'pharmacist': return next({ name: 'pharmacist' })
-          case 'nurse': return next({ name: 'nurse' })
-          case 'staff': return next({ name: 'staff' })
+          case 'pharmacist': return next({ name: 'pharmacist-dashboard' })
+          case 'nurse': return next({ name: 'nursing-dashboard' })
+          case 'hr_manager':
+          case 'staff': return next({ name: 'hr-dashboard' })
+          case 'billing_staff': return next({ name: 'finance-dashboard' })
+          case 'lab_technician':
+          case 'radiologist': return next({ name: 'lab-dashboard' })
+          case 'ot_technician': return next({ name: 'ot-dashboard' })
           case 'patient': return next({ name: 'patient-dashboard' })
           default: return next({ name: 'login' })
         }
@@ -345,6 +457,80 @@ router.beforeEach((to, _from, next) => {
       }
     } catch {
       // ignore parse errors
+    }
+    next()
+  } else if (to.meta.requiresNurse && isAuthenticated) {
+    try {
+      const stored = localStorage.getItem('apollo_user')
+      if (stored) {
+        const user = JSON.parse(stored)
+        if (user.role?.toLowerCase() !== 'nurse') {
+          next({ name: 'access-denied' })
+          return
+        }
+      }
+    } catch {
+      // ignore parse errors
+    }
+    next()
+  } else if (to.meta.requiresLabModule && isAuthenticated) {
+    try {
+      const stored = localStorage.getItem('apollo_user')
+      if (stored) {
+        const user = JSON.parse(stored)
+        const allowed = ['lab_technician', 'radiologist', 'admin']
+        if (!allowed.includes(user.role?.toLowerCase())) {
+          next({ name: 'access-denied' })
+          return
+        }
+      }
+    } catch {
+      // ignore
+    }
+    next()
+  } else if (to.meta.requiresOTModule && isAuthenticated) {
+    try {
+      const stored = localStorage.getItem('apollo_user')
+      if (stored) {
+        const user = JSON.parse(stored)
+        const allowed = ['doctor', 'nurse', 'admin']
+        if (!allowed.includes(user.role?.toLowerCase())) {
+          next({ name: 'access-denied' })
+          return
+        }
+      }
+    } catch {
+      // ignore
+    }
+    next()
+  } else if (to.meta.requiresHRModule && isAuthenticated) {
+    try {
+      const stored = localStorage.getItem('apollo_user')
+      if (stored) {
+        const user = JSON.parse(stored)
+        const allowed = ['hr_manager', 'admin', 'staff']
+        if (!allowed.includes(user.role?.toLowerCase())) {
+          next({ name: 'access-denied' })
+          return
+        }
+      }
+    } catch {
+      // ignore
+    }
+    next()
+  } else if (to.meta.requiresFinanceModule && isAuthenticated) {
+    try {
+      const stored = localStorage.getItem('apollo_user')
+      if (stored) {
+        const user = JSON.parse(stored)
+        const allowed = ['billing_staff', 'admin']
+        if (!allowed.includes(user.role?.toLowerCase())) {
+          next({ name: 'access-denied' })
+          return
+        }
+      }
+    } catch {
+      // ignore
     }
     next()
   } else if (to.meta.requiresPatientModule && isAuthenticated) {

@@ -1,9 +1,9 @@
 <template>
-  <div class="receptionist-layout">
+  <div class="hr-layout">
     <aside class="sidebar" :class="{ collapsed: sidebarCollapsed }">
       <div class="sidebar-header">
         <img :src="logoSvg" alt="Apollo" class="sidebar-logo" />
-        <span v-if="!sidebarCollapsed" class="sidebar-title">Apollo Reception</span>
+        <span v-if="!sidebarCollapsed" class="sidebar-title">Apollo HR</span>
         <button class="collapse-btn" @click="sidebarCollapsed = !sidebarCollapsed">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <path v-if="sidebarCollapsed" d="M6 4.5L11.25 9 6 13.5" />
@@ -70,52 +70,34 @@ const sidebarCollapsed = ref(false)
 
 const userInitials = computed(() => {
   const name = authStore.user?.full_name || ''
-  if (!name) return 'RC'
+  if (!name) return 'HR'
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 })
 
 const pageTitle = computed(() => {
   const titles: Record<string, string> = {
-    '/receptionist/dashboard': 'Dashboard',
-    '/receptionist/appointments': 'Appointments',
-    '/receptionist/patients': 'Patients',
-    '/receptionist/visitors': 'Visitors',
-    '/receptionist/billing': 'Billing & Payments',
+    '/hr/dashboard': 'Dashboard',
+    '/hr/staff': 'Staff'
   }
-  return titles[route.path] || 'Reception Portal'
+  return titles[route.path] || 'HR Portal'
 })
 
 const navItems = [
   {
-    path: '/receptionist/dashboard',
+    path: '/hr/dashboard',
     label: 'Dashboard',
     icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.25" y="2.25" width="5.25" height="5.25" rx="1" /><rect x="10.5" y="2.25" width="5.25" height="5.25" rx="1" /><rect x="2.25" y="10.5" width="5.25" height="5.25" rx="1" /><rect x="10.5" y="10.5" width="5.25" height="5.25" rx="1" /></svg>',
   },
   {
-    path: '/receptionist/appointments',
-    label: 'Appointments',
-    icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="3.5" width="13" height="12" rx="1.5"/><path d="M12 2v3M6 2v3M2.5 7.5h13"/></svg>',
-  },
-  {
-    path: '/receptionist/patients',
-    label: 'Patients',
+    path: '/hr/staff',
+    label: 'Staff',
     icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.75 15.75v-1.5a3 3 0 00-3-3h-4.5a3 3 0 00-3 3v1.5" /><circle cx="8" cy="5.25" r="3" /><path d="M15.75 15.75v-1.5a3 3 0 00-2.25-2.9" /><path d="M12 2.33a3 3 0 010 5.84" /></svg>',
   },
   {
-    path: '/receptionist/visitors',
-    label: 'Visitors',
-    icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5.5a3 3 0 116 0A3 3 0 016 5.5zM2 15.5a8.5 8.5 0 0114 0" /></svg>',
-  },
-  {
-    path: '/receptionist/billing',
-    label: 'Billing',
-    icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4.5" width="13" height="9" rx="1.5" /><path d="M2.5 7.5h13M6.5 10.5h2" /></svg>',
-  },
-  {
-    path: '/receptionist/profile',
+    path: '/hr/profile',
     label: 'My Profile',
     icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 8.5a3 3 0 100-6 3 3 0 000 6z"/><path d="M3 15.5a6 6 0 0112 0"/></svg>',
-  },
+  }
 ]
 
 function handleLogout() {
@@ -125,7 +107,7 @@ function handleLogout() {
 </script>
 
 <style scoped>
-.receptionist-layout {
+.hr-layout {
   display: flex;
   min-height: 100vh;
   background: var(--bg-light);
